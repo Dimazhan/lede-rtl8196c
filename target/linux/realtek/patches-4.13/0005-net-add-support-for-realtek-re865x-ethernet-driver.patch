@@ -1,0 +1,35 @@
+From 7c13cabfc02d2fa365a67e239be6ccf39778e4b7 Mon Sep 17 00:00:00 2001
+From: Weijie Gao <hackpascal@gmail.com>
+Date: Mon, 20 Feb 2017 21:53:52 +0800
+Subject: [PATCH 5/5] net: add support for realtek re865x ethernet driver
+
+Signed-off-by: Weijie Gao <hackpascal@gmail.com>
+---
+ drivers/net/ethernet/Kconfig  | 1 +
+ drivers/net/ethernet/Makefile | 1 +
+ 2 files changed, 2 insertions(+)
+
+Index: linux-4.13/drivers/net/ethernet/Kconfig
+===================================================================
+--- linux-4.13.orig/drivers/net/ethernet/Kconfig	2018-01-14 14:56:40.689259724 +0800
++++ linux-4.13/drivers/net/ethernet/Kconfig	2018-01-14 14:56:40.665259553 +0800
+@@ -158,6 +158,7 @@
+ source "drivers/net/ethernet/pasemi/Kconfig"
+ source "drivers/net/ethernet/qlogic/Kconfig"
+ source "drivers/net/ethernet/qualcomm/Kconfig"
++source "drivers/net/ethernet/re865x/Kconfig"
+ source "drivers/net/ethernet/realtek/Kconfig"
+ source "drivers/net/ethernet/renesas/Kconfig"
+ source "drivers/net/ethernet/rdc/Kconfig"
+Index: linux-4.13/drivers/net/ethernet/Makefile
+===================================================================
+--- linux-4.13.orig/drivers/net/ethernet/Makefile	2018-01-14 14:56:40.689259724 +0800
++++ linux-4.13/drivers/net/ethernet/Makefile	2018-01-14 14:56:40.673259610 +0800
+@@ -68,6 +68,7 @@
+ obj-$(CONFIG_NET_VENDOR_PASEMI) += pasemi/
+ obj-$(CONFIG_NET_VENDOR_QLOGIC) += qlogic/
+ obj-$(CONFIG_NET_VENDOR_QUALCOMM) += qualcomm/
++obj-$(CONFIG_RE865X) += re865x/
+ obj-$(CONFIG_NET_VENDOR_REALTEK) += realtek/
+ obj-$(CONFIG_NET_VENDOR_RENESAS) += renesas/
+ obj-$(CONFIG_NET_VENDOR_RDC) += rdc/

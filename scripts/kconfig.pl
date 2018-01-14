@@ -134,7 +134,7 @@ sub parse_expr {
 	my $mod_plus = shift;
 	my $arg = $arg[$$pos++];
 
-	die "Parse error" if (!$arg);
+	die "Parse error " if (!$arg);
 
 	if ($arg eq '&') {
 		my $arg1 = parse_expr($pos);

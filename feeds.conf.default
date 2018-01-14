@@ -1,5 +1,6 @@
 src-git packages https://git.lede-project.org/feed/packages.git
-src-git luci https://git.lede-project.org/project/luci.git
+#src-git luci https://git.lede-project.org/project/luci.git
+src-git luci https://github.com/openwrt/luci.git^4f644d9254021f385e50e6338dc35fee331792bd
 src-git routing https://git.lede-project.org/feed/routing.git
 src-git telephony https://git.lede-project.org/feed/telephony.git
 #src-git video https://github.com/openwrt/video.git
