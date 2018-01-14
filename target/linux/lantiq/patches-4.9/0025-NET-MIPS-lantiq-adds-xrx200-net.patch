@@ -209,7 +209,7 @@ Subject: [PATCH 25/36] NET: MIPS: lantiq: adds xrx200-net
 +};
 --- /dev/null
 +++ b/drivers/net/ethernet/lantiq_xrx200.c
-@@ -0,0 +1,1849 @@
+@@ -0,0 +1,1851 @@
 +/*
 + *   This program is free software; you can redistribute it and/or modify it
 + *   under the terms of the GNU General Public License version 2 as published
@@ -1110,14 +1110,15 @@ Subject: [PATCH 25/36] NET: MIPS: lantiq: adds xrx200-net
 +	for (i = 0; i < XRX200_MAX_DMA; i++) {
 +		if (!priv->hw->chan[i].dma.irq)
 +			continue;
-+		spin_lock_bh(&priv->hw->chan[i].lock);
++
 +		priv->hw->chan[i].refcount--;
 +		if (!priv->hw->chan[i].refcount) {
 +			if (XRX200_DMA_IS_RX(i))
 +				napi_disable(&priv->hw->chan[i].napi);
++			spin_lock_bh(&priv->hw->chan[i].lock);
 +			ltq_dma_close(&priv->hw->chan[XRX200_DMA_RX].dma);
++			spin_unlock_bh(&priv->hw->chan[i].lock);
 +		}
-+		spin_unlock_bh(&priv->hw->chan[i].lock);
 +	}
 +
 +	return 0;
@@ -1280,11 +1281,12 @@ Subject: [PATCH 25/36] NET: MIPS: lantiq: adds xrx200-net
 +#ifdef SW_ROUTING
 +	if (is_multicast_ether_addr(eth_hdr(skb)->h_dest)) {
 +		u16 port_map = priv->port_map;
-+		special_tag |= PORT_MAP_SEL | PORT_MAP_EN;
-+		if (skb->protocol == htons(ETH_P_8021Q)) {
++
++		if (priv->sw && skb->protocol == htons(ETH_P_8021Q)) {
 +			u16 vid;
 +			int i;
 +
++			port_map = 0;
 +			if (!__vlan_get_tag(skb, &vid)) {
 +				for (i = 0; i < XRX200_MAX_VLAN; i++) {
 +					if (priv->hw->vlan_vid[i] != vid)
@@ -1294,9 +1296,10 @@ Subject: [PATCH 25/36] NET: MIPS: lantiq: adds xrx200-net
 +				}
 +			}
 +		}
-+		special_tag |= port_map << PORT_MAP_SHIFT;
++
++		special_tag |= (port_map << PORT_MAP_SHIFT) |
++			       PORT_MAP_SEL | PORT_MAP_EN;
 +	}
-+	special_tag |= priv->port_map << PORT_MAP_SHIFT;
 +	if(priv->wan)
 +		special_tag |= (1 << DPID_SHIFT);
 +	if(skb_headroom(skb) < 4) {
@@ -1457,7 +1460,7 @@ Subject: [PATCH 25/36] NET: MIPS: lantiq: adds xrx200-net
 +static void xrx200_mdio_link(struct net_device *dev)
 +{
 +	struct xrx200_priv *priv = netdev_priv(dev);
-+	bool changed = false, link = false;
++	bool link = false;
 +	int i;
 +
 +	for (i = 0; i < priv->num_port; i++) {
@@ -1468,7 +1471,6 @@ Subject: [PATCH 25/36] NET: MIPS: lantiq: adds xrx200-net
 +			link = true;
 +
 +		if (priv->port[i].link != priv->port[i].phydev->link) {
-+			changed = true;
 +			xrx200_gmac_update(&priv->port[i]);
 +			priv->port[i].link = priv->port[i].phydev->link;
 +			netdev_info(dev, "port %d %s link\n",
@@ -1476,7 +1478,7 @@ Subject: [PATCH 25/36] NET: MIPS: lantiq: adds xrx200-net
 +				(priv->port[i].link)?("got"):("lost"));
 +		}
 +	}
-+	if (changed && !link)
++	if (netif_carrier_ok(dev) && !link)
 +		netif_carrier_off(dev);
 +}
 +

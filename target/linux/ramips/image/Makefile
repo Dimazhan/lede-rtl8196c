@@ -39,7 +39,7 @@ define Device/Default
   DEVICE_DTS_DIR := ../dts
   IMAGES := sysupgrade.bin
   IMAGE_SIZE := $(ralink_default_fw_size_8M)
-  SUPPORTED_DEVICES = $(1)
+  SUPPORTED_DEVICES := $(subst _,$(comma),$(1))
   sysupgrade_bin := append-kernel | append-rootfs | pad-rootfs
   IMAGE/sysupgrade.bin := append-kernel | append-rootfs | pad-rootfs | append-metadata | check-size $$$$(IMAGE_SIZE)
 endef
@@ -212,12 +212,8 @@ ifeq ($(SUBTARGET),mt7621)
 include mt7621.mk
 endif
 
-ifeq ($(SUBTARGET),mt7628)
-include mt7628.mk
-endif
-
-ifeq ($(SUBTARGET),mt7688)
-include mt7688.mk
+ifeq ($(SUBTARGET),mt76x8)
+include mt76x8.mk
 endif
 
 ifdef LEGACY_DEVICES

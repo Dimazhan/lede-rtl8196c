@@ -120,6 +120,36 @@ endef
 $(eval $(call KernelPackage,crypto-rng))
 
 
+define KernelPackage/crypto-rsa
+  TITLE:=RSA algorithm
+  DEPENDS:=@!LINUX_3_18 +kmod-crypto-manager
+  KCONFIG:= CONFIG_CRYPTO_RSA
+  HIDDEN:=1
+  FILES:= \
+	$(LINUX_DIR)/lib/asn1_decoder.ko \
+	$(LINUX_DIR)/lib/mpi/mpi.ko \
+	$(LINUX_DIR)/crypto/akcipher.ko \
+	$(LINUX_DIR)/crypto/rsa_generic.ko
+  AUTOLOAD:=$(call AutoLoad,10,rsa_generic)
+  $(call AddDepends/crypto)
+endef
+
+$(eval $(call KernelPackage,crypto-rsa))
+
+
+define KernelPackage/crypto-ecdh
+  TITLE:=ECDH algorithm
+  DEPENDS:=@!(LINUX_3_18||LINUX_4_4) +kmod-crypto-kpp
+  KCONFIG:= CONFIG_CRYPTO_ECDH
+  FILES:= \
+	$(LINUX_DIR)/crypto/ecdh_generic.ko
+  AUTOLOAD:=$(call AutoLoad,10,ecdh_generic)
+  $(call AddDepends/crypto)
+endef
+
+$(eval $(call KernelPackage,crypto-ecdh))
+
+
 define KernelPackage/crypto-iv
   TITLE:=CryptoAPI initialization vectors
   DEPENDS:=+kmod-crypto-manager +kmod-crypto-rng +kmod-crypto-wq
@@ -161,7 +191,7 @@ $(eval $(call KernelPackage,crypto-seqiv))
 
 define KernelPackage/crypto-hw-talitos
   TITLE:=Freescale integrated security engine (SEC) driver
-  DEPENDS:=+kmod-crypto-manager +kmod-crypto-hash +kmod-random-core +kmod-crypto-authenc
+  DEPENDS:=+kmod-crypto-manager +kmod-crypto-hash +kmod-random-core +kmod-crypto-authenc +kmod-crypto-des
   KCONFIG:= \
 	CONFIG_CRYPTO_HW=y \
 	CONFIG_CRYPTO_DEV_TALITOS \
@@ -196,12 +226,13 @@ $(eval $(call KernelPackage,crypto-hw-padlock))
 
 define KernelPackage/crypto-hw-ccp
   TITLE:=AMD Cryptographic Coprocessor
-  DEPENDS:=+kmod-crypto-authenc +kmod-crypto-hash +kmod-crypto-manager +kmod-random-core +kmod-crypto-sha1 +kmod-crypto-sha256
+  DEPENDS:=+kmod-crypto-authenc +kmod-crypto-hash +kmod-crypto-manager +kmod-random-core +kmod-crypto-sha1 +kmod-crypto-sha256 +LINUX_4_14:kmod-crypto-rsa
   KCONFIG:= \
 	CONFIG_CRYPTO_HW=y \
 	CONFIG_CRYPTO_DEV_CCP=y \
 	CONFIG_CRYPTO_DEV_CCP_CRYPTO \
-	CONFIG_CRYPTO_DEV_CCP_DD
+	CONFIG_CRYPTO_DEV_CCP_DD \
+	CONFIG_CRYPTO_DEV_SP_CCP=y
   FILES:= \
 	$(LINUX_DIR)/drivers/crypto/ccp/ccp.ko \
 	$(LINUX_DIR)/drivers/crypto/ccp/ccp-crypto.ko
@@ -307,6 +338,17 @@ endef
 
 $(eval $(call KernelPackage,crypto-crc32c))
 
+define KernelPackage/crypto-crc32
+  TITLE:=CRC32 CRC module
+  DEPENDS:=+kmod-crypto-hash
+  KCONFIG:=CONFIG_CRYPTO_CRC32
+  HIDDEN:=1
+  FILES:=$(LINUX_DIR)/crypto/crc32_generic.ko@ge4.9
+  AUTOLOAD:=$(call AutoLoad,04,crc32_generic@ge4.9,1)
+  $(call AddDepends/crypto)
+endef
+
+$(eval $(call KernelPackage,crypto-crc32))
 
 define KernelPackage/crypto-des
   TITLE:=DES/3DES cipher CryptoAPI module
@@ -319,9 +361,33 @@ endef
 $(eval $(call KernelPackage,crypto-des))
 
 
+define KernelPackage/crypto-kpp
+  TITLE:=Key-agreement Protocol Primitives
+  KCONFIG:=CONFIG_CRYPTO_KPP
+  HIDDEN:=1
+  FILES:=$(LINUX_DIR)/crypto/kpp.ko
+  AUTOLOAD:=$(call AutoLoad,09,kpp)
+  $(call AddDepends/crypto)
+endef
+
+$(eval $(call KernelPackage,crypto-kpp))
+
+
+define KernelPackage/crypto-acompress
+  TITLE:=Asynchronous Compression operations
+  HIDDEN:=1
+  KCONFIG:=CONFIG_CRYPTO_ACOMP2
+  FILES:=$(LINUX_DIR)/crypto/crypto_acompress.ko
+  AUTOLOAD:=$(call AutoLoad,09,crypto_acompress)
+  $(call AddDepends/crypto)
+endef
+
+$(eval $(call KernelPackage,crypto-acompress))
+
+
 define KernelPackage/crypto-deflate
   TITLE:=Deflate compression CryptoAPI module
-  DEPENDS:=+kmod-lib-zlib-inflate +kmod-lib-zlib-deflate
+  DEPENDS:=+kmod-lib-zlib-inflate +kmod-lib-zlib-deflate +LINUX_4_14:kmod-crypto-acompress
   KCONFIG:=CONFIG_CRYPTO_DEFLATE
   FILES:=$(LINUX_DIR)/crypto/deflate.ko
   AUTOLOAD:=$(call AutoLoad,09,deflate)
@@ -351,6 +417,17 @@ define KernelPackage/crypto-ecb
 endef
 
 $(eval $(call KernelPackage,crypto-ecb))
+
+define KernelPackage/crypto-cts
+  TITLE:=Cipher Text Stealing CryptoAPI module
+  DEPENDS:=+kmod-crypto-manager
+  KCONFIG:=CONFIG_CRYPTO_CTS
+  FILES:=$(LINUX_DIR)/crypto/cts.ko
+  AUTOLOAD:=$(call AutoLoad,09,cts)
+  $(call AddDepends/crypto)
+endef
+
+$(eval $(call KernelPackage,crypto-cts))
 
 
 define KernelPackage/crypto-hmac
@@ -437,7 +514,7 @@ endef
 
 define KernelPackage/crypto-md5/octeon
   FILES+=$(LINUX_DIR)/arch/mips/cavium-octeon/crypto/octeon-md5.ko
-  AUTOLOAD:=$(call AutoLoad,09,octeon-md5)
+  AUTOLOAD+=$(call AutoLoad,09,octeon-md5)
 endef
 
 $(eval $(call KernelPackage,crypto-md5))
@@ -469,12 +546,12 @@ endef
 
 define KernelPackage/crypto-sha1/octeon
   FILES+=$(LINUX_DIR)/arch/mips/cavium-octeon/crypto/octeon-sha1.ko
-  AUTOLOAD:=$(call AutoLoad,09,octeon-sha1)
+  AUTOLOAD+=$(call AutoLoad,09,octeon-sha1)
 endef
 
 define KernelPackage/crypto-sha1/x86/64
   FILES+=$(LINUX_DIR)/arch/x86/crypto/sha1-ssse3.ko
-  AUTOLOAD:=$(call AutoLoad,09,sha1-ssse3)
+  AUTOLOAD+=$(call AutoLoad,09,sha1-ssse3)
 endef
 
 $(eval $(call KernelPackage,crypto-sha1))
@@ -494,12 +571,12 @@ endef
 
 define KernelPackage/crypto-sha256/octeon
   FILES+=$(LINUX_DIR)/arch/mips/cavium-octeon/crypto/octeon-sha256.ko
-  AUTOLOAD:=$(call AutoLoad,09,octeon-sha256)
+  AUTOLOAD+=$(call AutoLoad,09,octeon-sha256)
 endef
 
 define KernelPackage/crypto-sha256/x86/64
   FILES+=$(LINUX_DIR)/arch/x86/crypto/sha256-ssse3.ko
-  AUTOLOAD:=$(call AutoLoad,09,sha256-ssse3)
+  AUTOLOAD+=$(call AutoLoad,09,sha256-ssse3)
 endef
 
 $(eval $(call KernelPackage,crypto-sha256))
@@ -519,12 +596,12 @@ endef
 
 define KernelPackage/crypto-sha512/octeon
   FILES+=$(LINUX_DIR)/arch/mips/cavium-octeon/crypto/octeon-sha512.ko
-  AUTOLOAD:=$(call AutoLoad,09,octeon-sha512)
+  AUTOLOAD+=$(call AutoLoad,09,octeon-sha512)
 endef
 
 define KernelPackage/crypto-sha512/x86/64
   FILES+=$(LINUX_DIR)/arch/x86/crypto/sha512-ssse3.ko
-  AUTOLOAD:=$(call AutoLoad,09,sha512-ssse3)
+  AUTOLOAD+=$(call AutoLoad,09,sha512-ssse3)
 endef
 
 $(eval $(call KernelPackage,crypto-sha512))

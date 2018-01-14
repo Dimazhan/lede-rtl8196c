@@ -24,7 +24,8 @@ SOUNDCORE_FILES ?= \
 	$(LINUX_DIR)/sound/soundcore.ko \
 	$(LINUX_DIR)/sound/core/snd.ko \
 	$(LINUX_DIR)/sound/core/snd-hwdep.ko \
-	$(LINUX_DIR)/sound/core/seq/snd-seq-device.ko \
+	$(LINUX_DIR)/sound/core/seq/snd-seq-device.ko@lt4.13 \
+	$(LINUX_DIR)/sound/core/snd-seq-device.ko@ge4.13 \
 	$(LINUX_DIR)/sound/core/snd-rawmidi.ko \
 	$(LINUX_DIR)/sound/core/snd-timer.ko \
 	$(LINUX_DIR)/sound/core/snd-pcm.ko \
@@ -67,7 +68,7 @@ define KernelPackage/sound-core/uml
   FILES:= \
 	$(LINUX_DIR)/sound/soundcore.ko \
 	$(LINUX_DIR)/arch/um/drivers/hostaudio.ko
-  AUTOLOAD:=$(call AutoLoad,30,soundcore hostaudio)
+  AUTOLOAD+=$(call AutoLoad,30,soundcore hostaudio)
 endef
 
 define KernelPackage/sound-core/description

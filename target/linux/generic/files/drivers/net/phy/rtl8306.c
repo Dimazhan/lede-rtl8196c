@@ -25,6 +25,7 @@
 #include <linux/switch.h>
 #include <linux/delay.h>
 #include <linux/phy.h>
+#include <linux/version.h>
 
 //#define DEBUG 1
 
@@ -592,7 +593,11 @@ rtl_get_port_link(struct switch_dev *dev, int port, struct switch_port_link *lin
 	if (port >= RTL8306_NUM_PORTS)
 		return -EINVAL;
 
+	/* in case the link changes from down to up, the register is only updated on read */
 	link->link = rtl_get(dev, RTL_PORT_REG(port, LINK));
+	if (!link->link)
+		link->link = rtl_get(dev, RTL_PORT_REG(port, LINK));
+
 	if (!link->link)
 		return 0;
 
@@ -1028,7 +1033,9 @@ rtl8306_read_status(struct phy_device *pdev)
 
 static struct phy_driver rtl8306_driver = {
 	.name		= "Realtek RTL8306S",
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,13,0))
 	.flags		= PHY_HAS_MAGICANEG,
+#endif
 	.phy_id		= RTL8306_MAGIC,
 	.phy_id_mask	= 0xffffffff,
 	.features	= PHY_BASIC_FEATURES,

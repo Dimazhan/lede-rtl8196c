@@ -29,7 +29,7 @@
 curdir:=toolchain
 
 # subdirectories to descend into
-$(curdir)/builddirs := $(if $(CONFIG_GDB),gdb) $(if $(CONFIG_INSIGHT),insight) $(if $(CONFIG_EXTERNAL_TOOLCHAIN),wrapper,kernel-headers binutils gcc/initial gcc/final $(LIBC) fortify-headers) $(if $(CONFIG_YASM),yasm)
+$(curdir)/builddirs := $(if $(CONFIG_GDB),gdb) $(if $(CONFIG_EXTERNAL_TOOLCHAIN),wrapper,kernel-headers binutils gcc/initial gcc/final $(LIBC) fortify-headers) $(if $(CONFIG_YASM),yasm)
 ifdef CONFIG_USE_UCLIBC
   $(curdir)/builddirs += $(LIBC)/utils
 endif
@@ -70,15 +70,15 @@ endif
 endif
 
 ifdef CONFIG_BUILDBOT
-  $(STAGING_DIR)/.toolchain_ver_check: $(TMP_DIR)/.build
-	cd "$(TOPDIR)"; git log --format=%h -1 > $(TMP_DIR)/.toolchain_ver_check
-	cmp -s $(TMP_DIR)/.toolchain_ver_check $@ || \
-		rm -rf $(BUILD_DIR) $(STAGING_DIR) $(TOOLCHAIN_DIR) $(BUILD_DIR_TOOLCHAIN)
-	mkdir -p $(STAGING_DIR)
-	mv $(TMP_DIR)/.toolchain_ver_check $@
+  $(TOOLCHAIN_DIR)/stamp/.ver_check: $(TMP_DIR)/.build
+	cd "$(TOPDIR)"; git log --format=%h -1 toolchain > $(TMP_DIR)/.ver_check
+	cmp -s $(TMP_DIR)/.ver_check $@ || { \
+		rm -rf $(BUILD_DIR) $(STAGING_DIR) $(TOOLCHAIN_DIR) $(BUILD_DIR_TOOLCHAIN); \
+		mkdir -p $(TOOLCHAIN_DIR)/stamp; \
+		mv $(TMP_DIR)/.ver_check $@; \
+	}
 
-$(STAGING_DIR)/.prepared: $(STAGING_DIR)/.toolchain_ver_check
-$(TOOLCHAIN_DIR)/stamp/.gcc-initial_installed: $(STAGING_DIR)/.prepared
+$(TOOLCHAIN_DIR)/info.mk $(STAGING_DIR)/.prepared: $(TOOLCHAIN_DIR)/stamp/.ver_check
 endif
 
 # prerequisites for the individual targets

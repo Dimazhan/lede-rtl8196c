@@ -1,14 +1,16 @@
 #!/bin/sh
 # Copyright (C) 2015-2016 OpenWrt.org
-
-. /lib/brcm2708.sh
+# Copyright (C) 2017 LEDE project
 
 set_preinit_iface() {
-	case "$(brcm2708_board_name)" in
-	rpi-b |\
-	rpi-b-plus |\
-	rpi-2-b |\
-	rpi-3-b)
+	. /lib/functions.sh
+
+	case "$(board_name)" in
+	raspberrypi,2-model-b |\
+	raspberrypi,3-model-b |\
+	raspberrypi,model-b |\
+	raspberrypi,model-b-plus |\
+	raspberrypi,model-b-rev2)
 		ifname=eth0
 		;;
 	esac

@@ -1,20 +1,20 @@
 #!/bin/sh
 # Copyright (C) 2015-2016 OpenWrt.org
+# Copyright (C) 2017 LEDE project
 
+. /lib/functions.sh
 . /lib/functions/leds.sh
-. /lib/brcm2708.sh
 
 set_state() {
-	case "$(brcm2708_board_name)" in
-	rpi-b |\
-	rpi-cm |\
-	rpi-zero)
-		status_led="led0"
-		;;
-	rpi-b-plus |\
-	rpi-2-b |\
-	rpi-3-b)
+	case "$(board_name)" in
+	raspberrypi,2-model-b |\
+	raspberrypi,model-b-plus)
 		status_led="led1"
+		;;
+	raspberrypi,model-b |\
+	raspberrypi,model-zero |\
+	raspberrypi,model-zero-w)
+		status_led="led0"
 		;;
 	esac
 

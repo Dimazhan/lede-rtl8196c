@@ -10,6 +10,7 @@
 
 	chosen {
 		bootargs = "root=/dev/mtdblock2 rootfstype=squashfs,jffs2 noinitrd console=ttyS0,115200";
+		stdout-path = "serial0:115200n8";
 	};
 
 	gpio-leds {
@@ -37,4 +38,14 @@
 			gpios = <&gpio0 5 1>;
 		};
 	};
+};
+
+&pflash {
+	status = "ok";
+
+	linux,part-probe = "bcm63xxpart";
+};
+
+&uart0 {
+	status = "ok";
 };
