@@ -17,11 +17,11 @@ Signed-off-by: Weijie Gao <hackpascal@gmail.com>
  drivers/usb/host/ohci.h | 4 ++++
  2 files changed, 8 insertions(+)
 
-Index: linux-4.13/drivers/usb/host/ehci.h
+Index: linux-4.14.13/drivers/usb/host/ehci.h
 ===================================================================
---- linux-4.13.orig/drivers/usb/host/ehci.h	2018-01-14 14:54:34.804370561 +0800
-+++ linux-4.13/drivers/usb/host/ehci.h	2018-01-14 14:54:34.792370477 +0800
-@@ -755,6 +755,8 @@
+--- linux-4.14.13.orig/drivers/usb/host/ehci.h	2018-01-14 17:06:42.340871525 +0800
++++ linux-4.14.13/drivers/usb/host/ehci.h	2018-01-14 17:06:42.336871502 +0800
+@@ -756,6 +756,8 @@
  	return ehci_big_endian_mmio(ehci) ?
  		readl_be(regs) :
  		readl(regs);
@@ -30,7 +30,7 @@ Index: linux-4.13/drivers/usb/host/ehci.h
  #else
  	return readl(regs);
  #endif
-@@ -779,6 +781,8 @@
+@@ -780,6 +782,8 @@
  	ehci_big_endian_mmio(ehci) ?
  		writel_be(val, regs) :
  		writel(val, regs);
@@ -39,10 +39,10 @@ Index: linux-4.13/drivers/usb/host/ehci.h
  #else
  	if (ehci->imx28_write_fix)
  		imx28_ehci_writel(val, regs);
-Index: linux-4.13/drivers/usb/host/ohci.h
+Index: linux-4.14.13/drivers/usb/host/ohci.h
 ===================================================================
---- linux-4.13.orig/drivers/usb/host/ohci.h	2018-01-14 14:54:34.804370561 +0800
-+++ linux-4.13/drivers/usb/host/ohci.h	2018-01-14 14:54:34.800370533 +0800
+--- linux-4.14.13.orig/drivers/usb/host/ohci.h	2018-01-14 17:06:42.340871525 +0800
++++ linux-4.14.13/drivers/usb/host/ohci.h	2018-01-14 17:06:42.336871502 +0800
 @@ -565,6 +565,8 @@
  	return big_endian_mmio(ohci) ?
  		readl_be (regs) :

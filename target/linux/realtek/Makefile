@@ -14,7 +14,7 @@ FEATURES:=squashfs
 MAINTAINER:=Weijie Gao <hackpascal@gmail.com>
 SUBTARGETS:=lexra
 
-KERNEL_PATCHVER:=4.4
+KERNEL_PATCHVER:=4.14
 
 include $(INCLUDE_DIR)/target.mk
 

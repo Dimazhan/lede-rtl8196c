@@ -12,10 +12,10 @@ Signed-off-by: Weijie Gao <hackpascal@gmail.com>
  arch/mips/pci/Makefile     |  1 +
  3 files changed, 24 insertions(+)
 
-Index: linux-4.13/arch/mips/Kbuild.platforms
+Index: linux-4.14.13/arch/mips/Kbuild.platforms
 ===================================================================
---- linux-4.13.orig/arch/mips/Kbuild.platforms	2018-01-14 14:53:16.419823751 +0800
-+++ linux-4.13/arch/mips/Kbuild.platforms	2018-01-14 14:53:16.415823724 +0800
+--- linux-4.14.13.orig/arch/mips/Kbuild.platforms	2018-01-14 17:05:59.656631603 +0800
++++ linux-4.14.13/arch/mips/Kbuild.platforms	2018-01-14 17:05:59.648631558 +0800
 @@ -26,6 +26,7 @@
  platforms += pmcs-msp71xx
  platforms += pnx833x
@@ -24,11 +24,11 @@ Index: linux-4.13/arch/mips/Kbuild.platforms
  platforms += rb532
  platforms += sgi-ip22
  platforms += sgi-ip27
-Index: linux-4.13/arch/mips/Kconfig
+Index: linux-4.14.13/arch/mips/Kconfig
 ===================================================================
---- linux-4.13.orig/arch/mips/Kconfig	2018-01-14 14:53:16.419823751 +0800
-+++ linux-4.13/arch/mips/Kconfig	2018-01-14 14:53:16.415823724 +0800
-@@ -1007,6 +1007,27 @@
+--- linux-4.14.13.orig/arch/mips/Kconfig	2018-01-14 17:05:59.656631603 +0800
++++ linux-4.14.13/arch/mips/Kconfig	2018-01-14 17:05:59.648631558 +0800
+@@ -1011,6 +1011,27 @@
  	help
  	  This option supports guest running under ????
  
@@ -56,7 +56,7 @@ Index: linux-4.13/arch/mips/Kconfig
  endchoice
  
  source "arch/mips/alchemy/Kconfig"
-@@ -1034,6 +1055,7 @@
+@@ -1038,6 +1059,7 @@
  source "arch/mips/netlogic/Kconfig"
  source "arch/mips/paravirt/Kconfig"
  source "arch/mips/xilfpga/Kconfig"
@@ -64,11 +64,11 @@ Index: linux-4.13/arch/mips/Kconfig
  
  endmenu
  
-Index: linux-4.13/arch/mips/pci/Makefile
+Index: linux-4.14.13/arch/mips/pci/Makefile
 ===================================================================
---- linux-4.13.orig/arch/mips/pci/Makefile	2018-01-14 14:53:16.419823751 +0800
-+++ linux-4.13/arch/mips/pci/Makefile	2018-01-14 14:53:16.419823751 +0800
-@@ -25,6 +25,7 @@
+--- linux-4.14.13.orig/arch/mips/pci/Makefile	2018-01-14 17:05:59.656631603 +0800
++++ linux-4.14.13/arch/mips/pci/Makefile	2018-01-14 17:05:59.652631580 +0800
+@@ -26,6 +26,7 @@
  obj-$(CONFIG_SOC_AR71XX)	+= pci-ar71xx.o
  obj-$(CONFIG_PCI_AR724X)	+= pci-ar724x.o
  obj-$(CONFIG_MIPS_PCI_VIRTIO)	+= pci-virtio-guest.o
