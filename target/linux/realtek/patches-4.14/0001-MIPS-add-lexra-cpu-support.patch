@@ -39,9 +39,9 @@ Signed-off-by: Weijie Gao <hackpascal@gmail.com>
 
 Index: linux-4.14.13/arch/mips/Kconfig
 ===================================================================
---- linux-4.14.13.orig/arch/mips/Kconfig	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/Kconfig	2018-01-14 17:00:43.638858855 +0800
-@@ -1567,6 +1567,11 @@
+--- linux-4.14.13.orig/arch/mips/Kconfig
++++ linux-4.14.13/arch/mips/Kconfig
+@@ -1567,6 +1567,11 @@ config CPU_R3000
  	  might be a safe bet.  If the resulting kernel does not work,
  	  try to recompile with R3000.
  
@@ -53,7 +53,7 @@ Index: linux-4.14.13/arch/mips/Kconfig
  config CPU_TX39XX
  	bool "R39XX"
  	depends on SYS_HAS_CPU_TX39XX
-@@ -2162,7 +2167,7 @@
+@@ -2162,7 +2167,7 @@ config PAGE_SIZE_8KB
  
  config PAGE_SIZE_16KB
  	bool "16kB"
@@ -62,7 +62,7 @@ Index: linux-4.14.13/arch/mips/Kconfig
  	help
  	  Using 16kB page size will result in higher performance kernel at
  	  the price of higher memory consumption.  This option is available on
-@@ -2181,7 +2186,7 @@
+@@ -2181,7 +2186,7 @@ config PAGE_SIZE_32KB
  
  config PAGE_SIZE_64KB
  	bool "64kB"
@@ -71,7 +71,7 @@ Index: linux-4.14.13/arch/mips/Kconfig
  	help
  	  Using 64kB page size will result in higher performance kernel at
  	  the price of higher memory consumption.  This option is available on
-@@ -2249,15 +2254,15 @@
+@@ -2249,15 +2254,15 @@ config CPU_HAS_PREFETCH
  
  config CPU_GENERIC_DUMP_TLB
  	bool
@@ -90,7 +90,7 @@ Index: linux-4.14.13/arch/mips/Kconfig
  
  config MIPS_MT_SMP
  	bool "MIPS MT SMP support (1 TC on each available VPE)"
-@@ -2484,7 +2489,7 @@
+@@ -2484,7 +2489,7 @@ config CPU_MIPSR2_IRQ_EI
  
  config CPU_HAS_SYNC
  	bool
@@ -99,7 +99,7 @@ Index: linux-4.14.13/arch/mips/Kconfig
  	default y
  
  #
-@@ -2502,7 +2507,7 @@
+@@ -2502,7 +2507,7 @@ config CPU_R4400_WORKAROUNDS
  
  config MIPS_ASID_SHIFT
  	int
@@ -110,9 +110,9 @@ Index: linux-4.14.13/arch/mips/Kconfig
  
 Index: linux-4.14.13/arch/mips/Makefile
 ===================================================================
---- linux-4.14.13.orig/arch/mips/Makefile	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/Makefile	2018-01-14 16:58:32.674126090 +0800
-@@ -155,6 +155,7 @@
+--- linux-4.14.13.orig/arch/mips/Makefile
++++ linux-4.14.13/arch/mips/Makefile
+@@ -155,6 +155,7 @@ cflags-y += -fno-stack-check
  # CPU-dependent compiler/assembler options for optimization.
  #
  cflags-$(CONFIG_CPU_R3000)	+= -march=r3000
@@ -122,9 +122,9 @@ Index: linux-4.14.13/arch/mips/Makefile
  cflags-$(CONFIG_CPU_VR41XX)	+= -march=r4100 -Wa,--trap
 Index: linux-4.14.13/arch/mips/include/asm/cpu-type.h
 ===================================================================
---- linux-4.14.13.orig/arch/mips/include/asm/cpu-type.h	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/include/asm/cpu-type.h	2018-01-14 16:58:32.674126090 +0800
-@@ -97,6 +97,14 @@
+--- linux-4.14.13.orig/arch/mips/include/asm/cpu-type.h
++++ linux-4.14.13/arch/mips/include/asm/cpu-type.h
+@@ -97,6 +97,14 @@ static inline int __pure __get_cpu_type(
  	case CPU_R3052:
  	case CPU_R3081:
  	case CPU_R3081E:
@@ -141,8 +141,8 @@ Index: linux-4.14.13/arch/mips/include/asm/cpu-type.h
  #ifdef CONFIG_SYS_HAS_CPU_TX39XX
 Index: linux-4.14.13/arch/mips/include/asm/cpu.h
 ===================================================================
---- linux-4.14.13.orig/arch/mips/include/asm/cpu.h	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/include/asm/cpu.h	2018-01-14 17:02:30.879459724 +0800
+--- linux-4.14.13.orig/arch/mips/include/asm/cpu.h
++++ linux-4.14.13/arch/mips/include/asm/cpu.h
 @@ -90,6 +90,15 @@
  #define PRID_IMP_R5432		0x5400
  #define PRID_IMP_R5500		0x5500
@@ -159,7 +159,7 @@ Index: linux-4.14.13/arch/mips/include/asm/cpu.h
  
  #define PRID_IMP_UNKNOWN	0xff00
  
-@@ -287,6 +296,12 @@
+@@ -287,6 +296,12 @@ enum cpu_type_enum {
  	CPU_R3081, CPU_R3081E,
  
  	/*
@@ -174,8 +174,8 @@ Index: linux-4.14.13/arch/mips/include/asm/cpu.h
  	CPU_R4000PC, CPU_R4000SC, CPU_R4000MC, CPU_R4200, CPU_R4300, CPU_R4310,
 Index: linux-4.14.13/arch/mips/include/asm/isadep.h
 ===================================================================
---- linux-4.14.13.orig/arch/mips/include/asm/isadep.h	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/include/asm/isadep.h	2018-01-14 16:58:32.674126090 +0800
+--- linux-4.14.13.orig/arch/mips/include/asm/isadep.h
++++ linux-4.14.13/arch/mips/include/asm/isadep.h
 @@ -10,7 +10,8 @@
  #ifndef __ASM_ISADEP_H
  #define __ASM_ISADEP_H
@@ -188,9 +188,9 @@ Index: linux-4.14.13/arch/mips/include/asm/isadep.h
   */
 Index: linux-4.14.13/arch/mips/include/asm/module.h
 ===================================================================
---- linux-4.14.13.orig/arch/mips/include/asm/module.h	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/include/asm/module.h	2018-01-14 16:58:32.674126090 +0800
-@@ -104,6 +104,8 @@
+--- linux-4.14.13.orig/arch/mips/include/asm/module.h
++++ linux-4.14.13/arch/mips/include/asm/module.h
+@@ -104,6 +104,8 @@ search_module_dbetables(unsigned long ad
  #define MODULE_PROC_FAMILY "MIPS64_R6 "
  #elif defined CONFIG_CPU_R3000
  #define MODULE_PROC_FAMILY "R3000 "
@@ -201,9 +201,9 @@ Index: linux-4.14.13/arch/mips/include/asm/module.h
  #elif defined CONFIG_CPU_VR41XX
 Index: linux-4.14.13/arch/mips/include/asm/pgtable-32.h
 ===================================================================
---- linux-4.14.13.orig/arch/mips/include/asm/pgtable-32.h	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/include/asm/pgtable-32.h	2018-01-14 16:58:32.674126090 +0800
-@@ -175,7 +175,8 @@
+--- linux-4.14.13.orig/arch/mips/include/asm/pgtable-32.h
++++ linux-4.14.13/arch/mips/include/asm/pgtable-32.h
+@@ -175,7 +175,8 @@ static inline pte_t pfn_pte(unsigned lon
  	((pte_t *)page_address(pmd_page(*(dir))) + __pte_offset(address))
  #define pte_unmap(pte) ((void)(pte))
  
@@ -213,7 +213,7 @@ Index: linux-4.14.13/arch/mips/include/asm/pgtable-32.h
  
  /* Swap entries must have VALID bit cleared. */
  #define __swp_type(x)			(((x).val >> 10) & 0x1f)
-@@ -220,6 +221,6 @@
+@@ -220,6 +221,6 @@ static inline pte_t pfn_pte(unsigned lon
  
  #endif /* defined(CONFIG_PHYS_ADDR_T_64BIT) && defined(CONFIG_CPU_MIPS32) */
  
@@ -223,9 +223,9 @@ Index: linux-4.14.13/arch/mips/include/asm/pgtable-32.h
  #endif /* _ASM_PGTABLE_32_H */
 Index: linux-4.14.13/arch/mips/include/asm/pgtable-bits.h
 ===================================================================
---- linux-4.14.13.orig/arch/mips/include/asm/pgtable-bits.h	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/include/asm/pgtable-bits.h	2018-01-14 16:58:32.674126090 +0800
-@@ -80,7 +80,8 @@
+--- linux-4.14.13.orig/arch/mips/include/asm/pgtable-bits.h
++++ linux-4.14.13/arch/mips/include/asm/pgtable-bits.h
+@@ -80,7 +80,8 @@ enum pgtable_bits {
  	_PAGE_MODIFIED_SHIFT,
  };
  
@@ -235,7 +235,7 @@ Index: linux-4.14.13/arch/mips/include/asm/pgtable-bits.h
  
  /* Page table bits used for r3k systems */
  enum pgtable_bits {
-@@ -204,7 +205,8 @@
+@@ -204,7 +205,8 @@ static inline uint64_t pte_to_entrylo(un
  /*
   * Cache attributes
   */
@@ -247,9 +247,9 @@ Index: linux-4.14.13/arch/mips/include/asm/pgtable-bits.h
  #define _CACHE_UNCACHED_ACCELERATED _CACHE_UNCACHED
 Index: linux-4.14.13/arch/mips/include/asm/pgtable.h
 ===================================================================
---- linux-4.14.13.orig/arch/mips/include/asm/pgtable.h	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/include/asm/pgtable.h	2018-01-14 16:58:32.674126090 +0800
-@@ -197,7 +197,8 @@
+--- linux-4.14.13.orig/arch/mips/include/asm/pgtable.h
++++ linux-4.14.13/arch/mips/include/asm/pgtable.h
+@@ -197,7 +197,8 @@ static inline void pte_clear(struct mm_s
  static inline void set_pte(pte_t *ptep, pte_t pteval)
  {
  	*ptep = pteval;
@@ -259,7 +259,7 @@ Index: linux-4.14.13/arch/mips/include/asm/pgtable.h
  	if (pte_val(pteval) & _PAGE_GLOBAL) {
  		pte_t *buddy = ptep_buddy(ptep);
  		/*
-@@ -256,7 +257,8 @@
+@@ -256,7 +257,8 @@ static inline void set_pte(pte_t *ptep,
  static inline void pte_clear(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
  {
  	htw_stop();
@@ -271,8 +271,8 @@ Index: linux-4.14.13/arch/mips/include/asm/pgtable.h
  		set_pte_at(mm, addr, ptep, __pte(_PAGE_GLOBAL));
 Index: linux-4.14.13/arch/mips/include/asm/stackframe.h
 ===================================================================
---- linux-4.14.13.orig/arch/mips/include/asm/stackframe.h	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/include/asm/stackframe.h	2018-01-14 16:58:32.674126090 +0800
+--- linux-4.14.13.orig/arch/mips/include/asm/stackframe.h
++++ linux-4.14.13/arch/mips/include/asm/stackframe.h
 @@ -42,7 +42,8 @@
  	cfi_restore \reg \offset \docfi
  	.endm
@@ -305,9 +305,9 @@ Index: linux-4.14.13/arch/mips/include/asm/stackframe.h
  		or	t0, t2
 Index: linux-4.14.13/arch/mips/include/asm/string.h
 ===================================================================
---- linux-4.14.13.orig/arch/mips/include/asm/string.h	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/include/asm/string.h	2018-01-14 16:58:32.674126090 +0800
-@@ -84,7 +84,7 @@
+--- linux-4.14.13.orig/arch/mips/include/asm/string.h
++++ linux-4.14.13/arch/mips/include/asm/string.h
+@@ -84,7 +84,7 @@ static __inline__ int strcmp(__const__ c
  	"addiu\t%1,1\n\t"
  	"bnez\t%2,1b\n\t"
  	"lbu\t%2,(%0)\n\t"
@@ -316,7 +316,7 @@ Index: linux-4.14.13/arch/mips/include/asm/string.h
  	"nop\n\t"
  #endif
  	"move\t%2,$1\n"
-@@ -117,7 +117,7 @@
+@@ -117,7 +117,7 @@ strncmp(__const__ char *__cs, __const__
  	"bnez\t%3,1b\n\t"
  	"addiu\t%1,1\n"
  	"2:\n\t"
@@ -327,9 +327,9 @@ Index: linux-4.14.13/arch/mips/include/asm/string.h
  	"move\t%3,$1\n"
 Index: linux-4.14.13/arch/mips/kernel/Makefile
 ===================================================================
---- linux-4.14.13.orig/arch/mips/kernel/Makefile	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/kernel/Makefile	2018-01-14 17:05:01.448304603 +0800
-@@ -38,6 +38,7 @@
+--- linux-4.14.13.orig/arch/mips/kernel/Makefile
++++ linux-4.14.13/arch/mips/kernel/Makefile
+@@ -38,6 +38,7 @@ obj-$(CONFIG_FUNCTION_TRACER)	+= mcount.
  
  sw-y				:= r4k_switch.o
  sw-$(CONFIG_CPU_R3000)		:= r2300_switch.o
@@ -339,9 +339,9 @@ Index: linux-4.14.13/arch/mips/kernel/Makefile
  obj-y				+= $(sw-y)
 Index: linux-4.14.13/arch/mips/kernel/cpu-probe.c
 ===================================================================
---- linux-4.14.13.orig/arch/mips/kernel/cpu-probe.c	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/kernel/cpu-probe.c	2018-01-14 16:58:32.674126090 +0800
-@@ -1506,6 +1506,86 @@
+--- linux-4.14.13.orig/arch/mips/kernel/cpu-probe.c
++++ linux-4.14.13/arch/mips/kernel/cpu-probe.c
+@@ -1506,6 +1506,86 @@ static inline void cpu_probe_legacy(stru
  		}
  
  		break;
@@ -430,9 +430,9 @@ Index: linux-4.14.13/arch/mips/kernel/cpu-probe.c
  
 Index: linux-4.14.13/arch/mips/kernel/entry.S
 ===================================================================
---- linux-4.14.13.orig/arch/mips/kernel/entry.S	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/kernel/entry.S	2018-01-14 16:58:32.674126090 +0800
-@@ -98,7 +98,8 @@
+--- linux-4.14.13.orig/arch/mips/kernel/entry.S
++++ linux-4.14.13/arch/mips/kernel/entry.S
+@@ -98,7 +98,8 @@ restore_partial:		# restore partial fram
  	SAVE_AT
  	SAVE_TEMP
  	LONG_L	v0, PT_STATUS(sp)
@@ -444,9 +444,9 @@ Index: linux-4.14.13/arch/mips/kernel/entry.S
  	and	v0, ST0_IE
 Index: linux-4.14.13/arch/mips/kernel/genex.S
 ===================================================================
---- linux-4.14.13.orig/arch/mips/kernel/genex.S	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/kernel/genex.S	2018-01-14 16:58:32.678126113 +0800
-@@ -165,7 +165,8 @@
+--- linux-4.14.13.orig/arch/mips/kernel/genex.S
++++ linux-4.14.13/arch/mips/kernel/genex.S
+@@ -165,7 +165,8 @@ NESTED(handle_int, PT_SIZE, sp)
  	.set	push
  	.set	noat
  	mfc0	k0, CP0_STATUS
@@ -456,7 +456,7 @@ Index: linux-4.14.13/arch/mips/kernel/genex.S
  	and	k0, ST0_IEP
  	bnez	k0, 1f
  
-@@ -584,7 +585,8 @@
+@@ -584,7 +585,8 @@ isrdhwr:
  	get_saved_sp	/* k1 := current_thread_info */
  	.set	noreorder
  	MFC0	k0, CP0_EPC
@@ -468,9 +468,9 @@ Index: linux-4.14.13/arch/mips/kernel/genex.S
  	LONG_L	v1, TI_TP_VALUE(k1)
 Index: linux-4.14.13/arch/mips/kernel/process.c
 ===================================================================
---- linux-4.14.13.orig/arch/mips/kernel/process.c	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/kernel/process.c	2018-01-14 16:58:32.678126113 +0800
-@@ -137,7 +137,8 @@
+--- linux-4.14.13.orig/arch/mips/kernel/process.c
++++ linux-4.14.13/arch/mips/kernel/process.c
+@@ -137,7 +137,8 @@ int copy_thread_tls(unsigned long clone_
  		p->thread.reg17 = kthread_arg;
  		p->thread.reg29 = childksp;
  		p->thread.reg31 = (unsigned long) ret_from_kernel_thread;
@@ -482,9 +482,9 @@ Index: linux-4.14.13/arch/mips/kernel/process.c
  #else
 Index: linux-4.14.13/arch/mips/kernel/unaligned.c
 ===================================================================
---- linux-4.14.13.orig/arch/mips/kernel/unaligned.c	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/kernel/unaligned.c	2018-01-14 16:58:32.678126113 +0800
-@@ -130,7 +130,7 @@
+--- linux-4.14.13.orig/arch/mips/kernel/unaligned.c
++++ linux-4.14.13/arch/mips/kernel/unaligned.c
+@@ -130,7 +130,7 @@ do {
  			: "r" (addr), "i" (-EFAULT));       \
  } while(0)
  
@@ -493,7 +493,7 @@ Index: linux-4.14.13/arch/mips/kernel/unaligned.c
  #define     _LoadW(addr, value, res, type)   \
  do {                                                        \
  		__asm__ __volatile__ (                      \
-@@ -365,7 +365,7 @@
+@@ -365,7 +365,7 @@ do {
  			: "r" (value), "r" (addr), "i" (-EFAULT));\
  } while(0)
  
@@ -502,7 +502,7 @@ Index: linux-4.14.13/arch/mips/kernel/unaligned.c
  #define     _StoreW(addr, value, res, type)  \
  do {                                                        \
  		__asm__ __volatile__ (                      \
-@@ -509,7 +509,7 @@
+@@ -509,7 +509,7 @@ do {
  			: "r" (addr), "i" (-EFAULT));       \
  } while(0)
  
@@ -511,7 +511,7 @@ Index: linux-4.14.13/arch/mips/kernel/unaligned.c
  #define     _LoadW(addr, value, res, type)   \
  do {                                                        \
  		__asm__ __volatile__ (                      \
-@@ -592,7 +592,7 @@
+@@ -592,7 +592,7 @@ do {
  			: "r" (addr), "i" (-EFAULT));       \
  } while(0)
  
@@ -520,7 +520,7 @@ Index: linux-4.14.13/arch/mips/kernel/unaligned.c
  #define     _LoadWU(addr, value, res, type)  \
  do {                                                        \
  		__asm__ __volatile__ (                      \
-@@ -743,7 +743,7 @@
+@@ -743,7 +743,7 @@ do {
  			: "r" (value), "r" (addr), "i" (-EFAULT));\
  } while(0)
  
@@ -531,9 +531,9 @@ Index: linux-4.14.13/arch/mips/kernel/unaligned.c
  		__asm__ __volatile__ (                      \
 Index: linux-4.14.13/arch/mips/kernel/vmlinux.lds.S
 ===================================================================
---- linux-4.14.13.orig/arch/mips/kernel/vmlinux.lds.S	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/kernel/vmlinux.lds.S	2018-01-14 16:58:32.678126113 +0800
-@@ -65,6 +65,11 @@
+--- linux-4.14.13.orig/arch/mips/kernel/vmlinux.lds.S
++++ linux-4.14.13/arch/mips/kernel/vmlinux.lds.S
+@@ -65,6 +65,11 @@ SECTIONS
  		*(.fixup)
  		*(.gnu.warning)
  	} :text = 0
@@ -545,7 +545,7 @@ Index: linux-4.14.13/arch/mips/kernel/vmlinux.lds.S
  	_etext = .;	/* End of text section */
  
  	EXCEPTION_TABLE(16)
-@@ -99,6 +104,14 @@
+@@ -99,6 +104,14 @@ SECTIONS
  		CONSTRUCTORS
  	}
  	BUG_TABLE
@@ -562,9 +562,9 @@ Index: linux-4.14.13/arch/mips/kernel/vmlinux.lds.S
  		*(.lit8)
 Index: linux-4.14.13/arch/mips/lib/Makefile
 ===================================================================
---- linux-4.14.13.orig/arch/mips/lib/Makefile	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/lib/Makefile	2018-01-14 16:58:32.678126113 +0800
-@@ -13,6 +13,7 @@
+--- linux-4.14.13.orig/arch/mips/lib/Makefile
++++ linux-4.14.13/arch/mips/lib/Makefile
+@@ -13,6 +13,7 @@ lib-$(CONFIG_GENERIC_CSUM)	:= $(filter-o
  
  obj-$(CONFIG_CPU_GENERIC_DUMP_TLB) += dump_tlb.o
  obj-$(CONFIG_CPU_R3000)		+= r3k_dump_tlb.o
@@ -574,8 +574,8 @@ Index: linux-4.14.13/arch/mips/lib/Makefile
  # libgcc-style stuff needed in the kernel
 Index: linux-4.14.13/arch/mips/lib/memcpy.S
 ===================================================================
---- linux-4.14.13.orig/arch/mips/lib/memcpy.S	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/lib/memcpy.S	2018-01-14 16:58:32.678126113 +0800
+--- linux-4.14.13.orig/arch/mips/lib/memcpy.S
++++ linux-4.14.13/arch/mips/lib/memcpy.S
 @@ -297,7 +297,7 @@
  	 and	t0, src, ADDRMASK
  	PREFS(	0, 2*32(src) )
@@ -623,8 +623,8 @@ Index: linux-4.14.13/arch/mips/lib/memcpy.S
  	.set __memcpy, 0
 Index: linux-4.14.13/arch/mips/lib/memset.S
 ===================================================================
---- linux-4.14.13.orig/arch/mips/lib/memset.S	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/lib/memset.S	2018-01-14 16:58:32.678126113 +0800
+--- linux-4.14.13.orig/arch/mips/lib/memset.S
++++ linux-4.14.13/arch/mips/lib/memset.S
 @@ -112,7 +112,7 @@
  	.set		at
  #endif
@@ -661,11 +661,20 @@ Index: linux-4.14.13/arch/mips/lib/memset.S
  	PTR_ADDU	a0, a2			/* What's left */
  	R10KCBARRIER(0(ra))
  #ifdef __MIPSEB__
+@@ -229,7 +229,7 @@
+ 	.hidden __memset
+ 	.endif
+ 
+-#ifdef CONFIG_CPU_MIPSR6
++#ifdef CONFIG_CPU_MIPSR6 || CONFIG_CPU_LEXRA
+ .Lbyte_fixup\@:
+ 	PTR_SUBU	a2, $0, t0
+ 	jr		ra
 Index: linux-4.14.13/arch/mips/mm/Makefile
 ===================================================================
---- linux-4.14.13.orig/arch/mips/mm/Makefile	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/mm/Makefile	2018-01-14 16:58:32.678126113 +0800
-@@ -20,6 +20,7 @@
+--- linux-4.14.13.orig/arch/mips/mm/Makefile
++++ linux-4.14.13/arch/mips/mm/Makefile
+@@ -20,6 +20,7 @@ obj-$(CONFIG_HUGETLB_PAGE)	+= hugetlbpag
  
  obj-$(CONFIG_CPU_R4K_CACHE_TLB) += c-r4k.o cex-gen.o tlb-r4k.o
  obj-$(CONFIG_CPU_R3000)		+= c-r3k.o tlb-r3k.o
@@ -675,9 +684,9 @@ Index: linux-4.14.13/arch/mips/mm/Makefile
  obj-$(CONFIG_CPU_TX39XX)	+= c-tx39.o tlb-r3k.o
 Index: linux-4.14.13/arch/mips/mm/tlb-r3k.c
 ===================================================================
---- linux-4.14.13.orig/arch/mips/mm/tlb-r3k.c	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/mm/tlb-r3k.c	2018-01-14 16:58:32.678126113 +0800
-@@ -283,9 +283,52 @@
+--- linux-4.14.13.orig/arch/mips/mm/tlb-r3k.c
++++ linux-4.14.13/arch/mips/mm/tlb-r3k.c
+@@ -283,9 +283,52 @@ void add_wired_entry(unsigned long entry
  	}
  }
  
@@ -732,9 +741,9 @@ Index: linux-4.14.13/arch/mips/mm/tlb-r3k.c
  		r3k_have_wired_reg = 1;
 Index: linux-4.14.13/arch/mips/mm/tlbex.c
 ===================================================================
---- linux-4.14.13.orig/arch/mips/mm/tlbex.c	2018-01-14 16:58:32.682126135 +0800
-+++ linux-4.14.13/arch/mips/mm/tlbex.c	2018-01-14 16:58:32.678126113 +0800
-@@ -2616,6 +2616,14 @@
+--- linux-4.14.13.orig/arch/mips/mm/tlbex.c
++++ linux-4.14.13/arch/mips/mm/tlbex.c
+@@ -2616,6 +2616,14 @@ void build_tlb_refill_handler(void)
  	case CPU_TX3912:
  	case CPU_TX3922:
  	case CPU_TX3927:
