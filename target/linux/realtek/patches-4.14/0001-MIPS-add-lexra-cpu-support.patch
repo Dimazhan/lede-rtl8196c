@@ -41,7 +41,7 @@ Index: linux-4.14.13/arch/mips/Kconfig
 ===================================================================
 --- linux-4.14.13.orig/arch/mips/Kconfig
 +++ linux-4.14.13/arch/mips/Kconfig
-@@ -1567,6 +1567,11 @@ config CPU_R3000
+@@ -1560,6 +1560,11 @@ config CPU_R3000
  	  might be a safe bet.  If the resulting kernel does not work,
  	  try to recompile with R3000.
  
@@ -53,7 +53,7 @@ Index: linux-4.14.13/arch/mips/Kconfig
  config CPU_TX39XX
  	bool "R39XX"
  	depends on SYS_HAS_CPU_TX39XX
-@@ -2162,7 +2167,7 @@ config PAGE_SIZE_8KB
+@@ -2151,7 +2156,7 @@ config PAGE_SIZE_8KB
  
  config PAGE_SIZE_16KB
  	bool "16kB"
@@ -62,7 +62,7 @@ Index: linux-4.14.13/arch/mips/Kconfig
  	help
  	  Using 16kB page size will result in higher performance kernel at
  	  the price of higher memory consumption.  This option is available on
-@@ -2181,7 +2186,7 @@ config PAGE_SIZE_32KB
+@@ -2170,7 +2175,7 @@ config PAGE_SIZE_32KB
  
  config PAGE_SIZE_64KB
  	bool "64kB"
@@ -71,7 +71,7 @@ Index: linux-4.14.13/arch/mips/Kconfig
  	help
  	  Using 64kB page size will result in higher performance kernel at
  	  the price of higher memory consumption.  This option is available on
-@@ -2249,15 +2254,15 @@ config CPU_HAS_PREFETCH
+@@ -2238,15 +2243,15 @@ config CPU_HAS_PREFETCH
  
  config CPU_GENERIC_DUMP_TLB
  	bool
@@ -90,7 +90,7 @@ Index: linux-4.14.13/arch/mips/Kconfig
  
  config MIPS_MT_SMP
  	bool "MIPS MT SMP support (1 TC on each available VPE)"
-@@ -2484,7 +2489,7 @@ config CPU_MIPSR2_IRQ_EI
+@@ -2473,7 +2478,7 @@ config CPU_MIPSR2_IRQ_EI
  
  config CPU_HAS_SYNC
  	bool
@@ -99,7 +99,7 @@ Index: linux-4.14.13/arch/mips/Kconfig
  	default y
  
  #
-@@ -2502,7 +2507,7 @@ config CPU_R4400_WORKAROUNDS
+@@ -2491,18 +2496,19 @@ config CPU_R4400_WORKAROUNDS
  
  config MIPS_ASID_SHIFT
  	int
@@ -108,11 +108,24 @@ Index: linux-4.14.13/arch/mips/Kconfig
  	default 4 if CPU_R8000
  	default 0
  
+ config MIPS_ASID_BITS
+ 	int
+ 	default 0 if MIPS_ASID_BITS_VARIABLE
+-	default 6 if CPU_R3000 || CPU_TX39XX
++	default 6 if CPU_R3000 || CPU_TX39XX || CPU_LEXRA
+ 	default 8
+ 
+ config MIPS_ASID_BITS_VARIABLE
+ 	bool
++	default n if CPU_LEXRA
+ 
+ #
+ # - Highmem only makes sense for the 32-bit kernel.
 Index: linux-4.14.13/arch/mips/Makefile
 ===================================================================
 --- linux-4.14.13.orig/arch/mips/Makefile
 +++ linux-4.14.13/arch/mips/Makefile
-@@ -155,6 +155,7 @@ cflags-y += -fno-stack-check
+@@ -150,6 +150,7 @@ cflags-y += -fno-stack-check
  # CPU-dependent compiler/assembler options for optimization.
  #
  cflags-$(CONFIG_CPU_R3000)	+= -march=r3000
@@ -190,7 +203,7 @@ Index: linux-4.14.13/arch/mips/include/asm/module.h
 ===================================================================
 --- linux-4.14.13.orig/arch/mips/include/asm/module.h
 +++ linux-4.14.13/arch/mips/include/asm/module.h
-@@ -104,6 +104,8 @@ search_module_dbetables(unsigned long ad
+@@ -99,6 +99,8 @@ search_module_dbetables(unsigned long ad
  #define MODULE_PROC_FAMILY "MIPS64_R6 "
  #elif defined CONFIG_CPU_R3000
  #define MODULE_PROC_FAMILY "R3000 "
@@ -341,7 +354,7 @@ Index: linux-4.14.13/arch/mips/kernel/cpu-probe.c
 ===================================================================
 --- linux-4.14.13.orig/arch/mips/kernel/cpu-probe.c
 +++ linux-4.14.13/arch/mips/kernel/cpu-probe.c
-@@ -1506,6 +1506,86 @@ static inline void cpu_probe_legacy(stru
+@@ -1506,6 +1506,78 @@ static inline void cpu_probe_legacy(stru
  		}
  
  		break;
@@ -352,7 +365,6 @@ Index: linux-4.14.13/arch/mips/kernel/cpu-probe.c
 +		c->options = MIPS_CPU_TLB | MIPS_CPU_3K_CACHE |
 +			     MIPS_CPU_NOFPUEX;
 +		c->ases = MIPS_ASE_MIPS16;
-+		set_cpu_asid_mask(c, 0xfc0);
 +		c->tlbsize = 64;	/* Assuming maximum number of TLB entries */
 +		break;
 +	case PRID_IMP_LX4189:
@@ -362,7 +374,6 @@ Index: linux-4.14.13/arch/mips/kernel/cpu-probe.c
 +		c->options = MIPS_CPU_TLB | MIPS_CPU_3K_CACHE |
 +			     MIPS_CPU_NOFPUEX;
 +		c->ases = MIPS_ASE_MIPS16;
-+		set_cpu_asid_mask(c, 0xfc0);
 +		c->tlbsize = 64;	/* Assuming maximum number of TLB entries */
 +		break;
 +	case PRID_IMP_LX4280:
@@ -372,7 +383,6 @@ Index: linux-4.14.13/arch/mips/kernel/cpu-probe.c
 +		c->options = MIPS_CPU_TLB | MIPS_CPU_3K_CACHE |
 +			     MIPS_CPU_NOFPUEX;
 +		c->ases = MIPS_ASE_MIPS16;
-+		set_cpu_asid_mask(c, 0xfc0);
 +		c->tlbsize = 64;	/* Assuming maximum number of TLB entries */
 +		break;
 +	case PRID_IMP_LX4380:
@@ -382,7 +392,6 @@ Index: linux-4.14.13/arch/mips/kernel/cpu-probe.c
 +		c->options = MIPS_CPU_TLB | MIPS_CPU_3K_CACHE |
 +			     MIPS_CPU_NOFPUEX;
 +		c->ases = MIPS_ASE_MIPS16;
-+		set_cpu_asid_mask(c, 0xfc0);
 +		c->tlbsize = 64;	/* Assuming maximum number of TLB entries */
 +		break;
 +	case PRID_IMP_LX5180:
@@ -392,7 +401,6 @@ Index: linux-4.14.13/arch/mips/kernel/cpu-probe.c
 +		c->options = MIPS_CPU_TLB | MIPS_CPU_3K_CACHE |
 +			     MIPS_CPU_NOFPUEX;
 +		c->ases = MIPS_ASE_MIPS16;
-+		set_cpu_asid_mask(c, 0xfc0);
 +		c->tlbsize = 64;	/* Assuming maximum number of TLB entries */
 +		break;
 +	case PRID_IMP_LX5280:
@@ -402,7 +410,6 @@ Index: linux-4.14.13/arch/mips/kernel/cpu-probe.c
 +		c->options = MIPS_CPU_TLB | MIPS_CPU_3K_CACHE |
 +			     MIPS_CPU_NOFPUEX;
 +		c->ases = MIPS_ASE_MIPS16;
-+		set_cpu_asid_mask(c, 0xfc0);
 +		c->tlbsize = 64;	/* Assuming maximum number of TLB entries */
 +		break;
 +	case PRID_IMP_LX8000:
@@ -412,7 +419,6 @@ Index: linux-4.14.13/arch/mips/kernel/cpu-probe.c
 +		c->options = MIPS_CPU_TLB | MIPS_CPU_3K_CACHE |
 +			     MIPS_CPU_NOFPUEX;
 +		c->ases = MIPS_ASE_MIPS16;
-+		set_cpu_asid_mask(c, 0xfc0);
 +		c->tlbsize = 64;	/* Assuming maximum number of TLB entries */
 +		break;
 +	case PRID_IMP_LX8380:
@@ -422,7 +428,6 @@ Index: linux-4.14.13/arch/mips/kernel/cpu-probe.c
 +		c->options = MIPS_CPU_TLB | MIPS_CPU_3K_CACHE |
 +			     MIPS_CPU_NOFPUEX;
 +		c->ases = MIPS_ASE_MIPS16;
-+		set_cpu_asid_mask(c, 0xfc0);
 +		c->tlbsize = 64;	/* Assuming maximum number of TLB entries */
 +		break;
  	}

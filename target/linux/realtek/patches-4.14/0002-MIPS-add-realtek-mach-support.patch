@@ -14,9 +14,9 @@ Signed-off-by: Weijie Gao <hackpascal@gmail.com>
 
 Index: linux-4.14.13/arch/mips/Kbuild.platforms
 ===================================================================
---- linux-4.14.13.orig/arch/mips/Kbuild.platforms	2018-01-14 17:05:59.656631603 +0800
-+++ linux-4.14.13/arch/mips/Kbuild.platforms	2018-01-14 17:05:59.648631558 +0800
-@@ -26,6 +26,7 @@
+--- linux-4.14.13.orig/arch/mips/Kbuild.platforms
++++ linux-4.14.13/arch/mips/Kbuild.platforms
+@@ -26,6 +26,7 @@ platforms += pistachio
  platforms += pmcs-msp71xx
  platforms += pnx833x
  platforms += ralink
@@ -26,9 +26,9 @@ Index: linux-4.14.13/arch/mips/Kbuild.platforms
  platforms += sgi-ip27
 Index: linux-4.14.13/arch/mips/Kconfig
 ===================================================================
---- linux-4.14.13.orig/arch/mips/Kconfig	2018-01-14 17:05:59.656631603 +0800
-+++ linux-4.14.13/arch/mips/Kconfig	2018-01-14 17:05:59.648631558 +0800
-@@ -1011,6 +1011,27 @@
+--- linux-4.14.13.orig/arch/mips/Kconfig
++++ linux-4.14.13/arch/mips/Kconfig
+@@ -1008,6 +1008,27 @@ config MIPS_PARAVIRT
  	help
  	  This option supports guest running under ????
  
@@ -56,7 +56,7 @@ Index: linux-4.14.13/arch/mips/Kconfig
  endchoice
  
  source "arch/mips/alchemy/Kconfig"
-@@ -1038,6 +1059,7 @@
+@@ -1035,6 +1056,7 @@ source "arch/mips/loongson64/Kconfig"
  source "arch/mips/netlogic/Kconfig"
  source "arch/mips/paravirt/Kconfig"
  source "arch/mips/xilfpga/Kconfig"
@@ -66,9 +66,9 @@ Index: linux-4.14.13/arch/mips/Kconfig
  
 Index: linux-4.14.13/arch/mips/pci/Makefile
 ===================================================================
---- linux-4.14.13.orig/arch/mips/pci/Makefile	2018-01-14 17:05:59.656631603 +0800
-+++ linux-4.14.13/arch/mips/pci/Makefile	2018-01-14 17:05:59.652631580 +0800
-@@ -26,6 +26,7 @@
+--- linux-4.14.13.orig/arch/mips/pci/Makefile
++++ linux-4.14.13/arch/mips/pci/Makefile
+@@ -26,6 +26,7 @@ obj-$(CONFIG_PCI_AR2315)	+= pci-ar2315.o
  obj-$(CONFIG_SOC_AR71XX)	+= pci-ar71xx.o
  obj-$(CONFIG_PCI_AR724X)	+= pci-ar724x.o
  obj-$(CONFIG_MIPS_PCI_VIRTIO)	+= pci-virtio-guest.o
