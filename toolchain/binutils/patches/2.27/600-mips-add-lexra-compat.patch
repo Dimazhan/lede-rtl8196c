@@ -1,7 +1,5 @@
-Index: binutils-2.27/bfd/bfd-in2.h
-===================================================================
---- binutils-2.27.orig/bfd/bfd-in2.h
-+++ binutils-2.27/bfd/bfd-in2.h
+--- a/bfd/bfd-in2.h
++++ b/bfd/bfd-in2.h
 @@ -2019,6 +2019,7 @@ enum bfd_architecture
  #define bfd_mach_mipsisa64r5           68
  #define bfd_mach_mipsisa64r6           69
@@ -10,10 +8,8 @@ Index: binutils-2.27/bfd/bfd-in2.h
    bfd_arch_i386,      /* Intel 386 */
  #define bfd_mach_i386_intel_syntax     (1 << 0)
  #define bfd_mach_i386_i8086            (1 << 1)
-Index: binutils-2.27/bfd/cpu-mips.c
-===================================================================
---- binutils-2.27.orig/bfd/cpu-mips.c
-+++ binutils-2.27/bfd/cpu-mips.c
+--- a/bfd/cpu-mips.c
++++ b/bfd/cpu-mips.c
 @@ -104,7 +104,8 @@ enum
    I_mipsocteon2,
    I_mipsocteon3,
@@ -34,10 +30,8 @@ Index: binutils-2.27/bfd/cpu-mips.c
  };
  
  /* The default architecture is mips:3000, but with a machine number of
-Index: binutils-2.27/gas/config/tc-mips.c
-===================================================================
---- binutils-2.27.orig/gas/config/tc-mips.c
-+++ binutils-2.27/gas/config/tc-mips.c
+--- a/gas/config/tc-mips.c
++++ b/gas/config/tc-mips.c
 @@ -1351,6 +1351,7 @@ static int relaxed_branch_length (fragS
  static int relaxed_micromips_16bit_branch_length (fragS *, asection *, int);
  static int relaxed_micromips_32bit_branch_length (fragS *, asection *, int);
@@ -143,7 +137,7 @@ Index: binutils-2.27/gas/config/tc-mips.c
  
    /* If the branch reads a register that the previous
       instruction sets, we can not swap.  */
-@@ -18864,6 +18920,9 @@ static const struct mips_cpu_info mips_c
+@@ -18861,6 +18920,9 @@ static const struct mips_cpu_info mips_c
    { "i6400",	      0, ASE_MSA,		ISA_MIPS64R6, CPU_MIPS64R6},
    { "p6600",	      0, ASE_VIRT | ASE_MSA,	ISA_MIPS64R6, CPU_MIPS64R6},
  
@@ -153,10 +147,8 @@ Index: binutils-2.27/gas/config/tc-mips.c
    /* End marker */
    { NULL, 0, 0, 0, 0 }
  };
-Index: binutils-2.27/include/opcode/mips.h
-===================================================================
---- binutils-2.27.orig/include/opcode/mips.h
-+++ binutils-2.27/include/opcode/mips.h
+--- a/include/opcode/mips.h
++++ b/include/opcode/mips.h
 @@ -478,7 +478,10 @@ enum mips_reg_operand_type {
    OP_REG_MSA,
  
@@ -206,10 +198,8 @@ Index: binutils-2.27/include/opcode/mips.h
      case CPU_MIPS32R6:
        return (mask & INSN_ISA_MASK) == INSN_ISA32R6;
  
-Index: binutils-2.27/opcodes/mips16-opc.c
-===================================================================
---- binutils-2.27.orig/opcodes/mips16-opc.c
-+++ binutils-2.27/opcodes/mips16-opc.c
+--- a/opcodes/mips16-opc.c
++++ b/opcodes/mips16-opc.c
 @@ -179,6 +179,8 @@ decode_mips16_operand (char type, bfd_bo
  #define I64	INSN_ISA64
  #define T3	INSN_3900
@@ -246,10 +236,8 @@ Index: binutils-2.27/opcodes/mips16-opc.c
  {"mul",     "z,v,y",	0, (int) M_MUL, 	INSN_MACRO,		0,		I1,	0,	0 },
  {"mult",    "x,y",	0xe818, 0xf81f,		RD_1|RD_2|WR_HI|WR_LO,	0,		I1,	0,	0 },
  {"multu",   "x,y",	0xe819, 0xf81f,		RD_1|RD_2|WR_HI|WR_LO,	0,		I1,	0,	0 },
-Index: binutils-2.27/opcodes/mips-dis.c
-===================================================================
---- binutils-2.27.orig/opcodes/mips-dis.c
-+++ binutils-2.27/opcodes/mips-dis.c
+--- a/opcodes/mips-dis.c
++++ b/opcodes/mips-dis.c
 @@ -416,6 +416,15 @@ static const char * const msa_control_na
    "$24",  "$25",  "$26",  "$27",  "$28",  "$29",  "$30",  "$31"
  };
@@ -288,10 +276,8 @@ Index: binutils-2.27/opcodes/mips-dis.c
      }
  }
  
-Index: binutils-2.27/opcodes/mips-opc.c
-===================================================================
---- binutils-2.27.orig/opcodes/mips-opc.c
-+++ binutils-2.27/opcodes/mips-opc.c
+--- a/opcodes/mips-opc.c
++++ b/opcodes/mips-opc.c
 @@ -198,6 +198,7 @@ decode_mips_operand (const char *p)
      case 'i': HINT (16, 0);
      case 'j': SINT (16, 0);
@@ -308,17 +294,6 @@ Index: binutils-2.27/opcodes/mips-opc.c
  #define IVIRT	ASE_VIRT
  #define IVIRT64	ASE_VIRT64
  
-@@ -956,8 +958,8 @@ const struct mips_opcode mips_builtin_op
- {"cins",		"t,r,+p,+S",	0x70000032, 0xfc00003f, WR_1|RD_2,		0,		IOCT,		0,	0 },
- {"clo",			"d,s",		0x00000051, 0xfc1f07ff, WR_1|RD_2,		0,		I37,		0,	0 },
- {"clo",			"U,s",		0x70000021, 0xfc0007ff, WR_1|RD_2,		0,		I32|N55,	0,	I37 },
--{"clz",			"d,s",		0x00000050, 0xfc1f07ff, WR_1|RD_2,		0,		I37,		0,	0 },
--{"clz",			"U,s",		0x70000020, 0xfc0007ff, WR_1|RD_2,		0,		I32|N55,	0,	I37 },
-+{"clz",			"d,s",		0x00000050, 0xfc1f07ff, WR_1|RD_2,		0,		I37|LX,		0,	0 },
-+{"clz",			"U,s",		0x70000020, 0xfc0007ff, WR_1|RD_2,		0,		I32|N55|LX,	0,	I37 },
- /* ctc0 is at the bottom of the table.  */
- {"ctc1",		"t,G",		0x44c00000, 0xffe007ff,	RD_1|WR_CC|CM,		0,		I1,		0,	0 },
- {"ctc1",		"t,S",		0x44c00000, 0xffe007ff,	RD_1|WR_CC|CM,		0,		I1,		0,	0 },
 @@ -999,7 +1001,7 @@ const struct mips_opcode mips_builtin_op
  /* dctr and dctw are used on the r5000.  */
  {"dctr",		"o(b)",	 	0xbc050000, 0xfc1f0000, RD_2,			0,		I3,		0,	0 },

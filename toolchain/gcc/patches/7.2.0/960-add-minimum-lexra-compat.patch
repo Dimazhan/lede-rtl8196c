@@ -2,9 +2,9 @@ Add support for lexra architecture (lx4180) support with minimum modifications
 
 Index: gcc-7.2.0/gcc/config/mips/mips.c
 ===================================================================
---- gcc-7.2.0.orig/gcc/config/mips/mips.c	2018-01-15 13:04:47.741559582 +0800
-+++ gcc-7.2.0/gcc/config/mips/mips.c	2018-01-15 13:28:29.672459598 +0800
-@@ -7986,6 +7986,8 @@
+--- gcc-7.2.0.orig/gcc/config/mips/mips.c
++++ gcc-7.2.0/gcc/config/mips/mips.c
+@@ -7986,6 +7986,8 @@ mips_block_move_straight (rtx dest, rtx
        if (MEM_ALIGN (src) == BITS_PER_WORD / 2
  	  && MEM_ALIGN (dest) == BITS_PER_WORD / 2)
  	bits = BITS_PER_WORD / 2;
@@ -13,7 +13,7 @@ Index: gcc-7.2.0/gcc/config/mips/mips.c
        else
  	bits = BITS_PER_WORD;
      }
-@@ -8361,6 +8363,8 @@
+@@ -8361,6 +8363,8 @@ mips_expand_ext_as_unaligned_load (rtx d
      }
    else
      {
@@ -22,7 +22,7 @@ Index: gcc-7.2.0/gcc/config/mips/mips.c
        emit_insn (gen_mov_lwl (temp, src, left));
        emit_insn (gen_mov_lwr (dest, copy_rtx (src), right, temp));
      }
-@@ -8404,6 +8408,8 @@
+@@ -8404,6 +8408,8 @@ mips_expand_ins_as_unaligned_store (rtx
      }
    else
      {
@@ -31,7 +31,7 @@ Index: gcc-7.2.0/gcc/config/mips/mips.c
        emit_insn (gen_mov_swl (dest, src, left));
        emit_insn (gen_mov_swr (copy_rtx (dest), copy_rtx (src), right));
      }
-@@ -19663,6 +19669,10 @@
+@@ -19663,6 +19669,10 @@ mips_option_override (void)
    if (mips_arch_info == 0)
      mips_set_architecture (mips_default_arch ());
  
@@ -44,22 +44,21 @@ Index: gcc-7.2.0/gcc/config/mips/mips.c
  	   mips_arch_info->name);
 Index: gcc-7.2.0/gcc/config/mips/mips-cpus.def
 ===================================================================
---- gcc-7.2.0.orig/gcc/config/mips/mips-cpus.def	2018-01-15 13:04:47.741559582 +0800
-+++ gcc-7.2.0/gcc/config/mips/mips-cpus.def	2018-01-15 13:21:54.505765307 +0800
-@@ -169,5 +169,8 @@
- MIPS_CPU ("octeon3", PROCESSOR_OCTEON3, 65, PTF_AVOID_BRANCHLIKELY_SPEED)
- MIPS_CPU ("xlp", PROCESSOR_XLP, 65, PTF_AVOID_BRANCHLIKELY_SPEED)
+--- gcc-7.2.0.orig/gcc/config/mips/mips-cpus.def
++++ gcc-7.2.0/gcc/config/mips/mips-cpus.def
+@@ -171,3 +171,7 @@ MIPS_CPU ("xlp", PROCESSOR_XLP, 65, PTF_
  
+ /* MIPS64 Release 6 processors.  */
+ MIPS_CPU ("i6400", PROCESSOR_I6400, 69, 0)
++
 +/* Lexra processors */
 +MIPS_CPU ("lexra", PROCESSOR_LEXRA, 1, 0)
 +
- /* MIPS64 Release 6 processors.  */
- MIPS_CPU ("i6400", PROCESSOR_I6400, 69, 0)
 Index: gcc-7.2.0/gcc/config/mips/mips.h
 ===================================================================
---- gcc-7.2.0.orig/gcc/config/mips/mips.h	2018-01-15 13:04:47.741559582 +0800
-+++ gcc-7.2.0/gcc/config/mips/mips.h	2018-01-15 13:26:08.208183386 +0800
-@@ -286,6 +286,7 @@
+--- gcc-7.2.0.orig/gcc/config/mips/mips.h
++++ gcc-7.2.0/gcc/config/mips/mips.h
+@@ -286,6 +286,7 @@ struct mips_cpu_info {
  				     || mips_arch == PROCESSOR_SB1A)
  #define TARGET_SR71K                (mips_arch == PROCESSOR_SR71000)
  #define TARGET_XLP                  (mips_arch == PROCESSOR_XLP)
@@ -67,7 +66,7 @@ Index: gcc-7.2.0/gcc/config/mips/mips.h
  
  /* Scheduling target defines.  */
  #define TUNE_20KC		    (mips_tune == PROCESSOR_20KC)
-@@ -299,7 +300,7 @@
+@@ -299,7 +300,7 @@ struct mips_cpu_info {
  #define TUNE_LOONGSON_2EF           (mips_tune == PROCESSOR_LOONGSON_2E	\
  				     || mips_tune == PROCESSOR_LOONGSON_2F)
  #define TUNE_LOONGSON_3A            (mips_tune == PROCESSOR_LOONGSON_3A)
@@ -76,7 +75,7 @@ Index: gcc-7.2.0/gcc/config/mips/mips.h
  #define TUNE_MIPS3900               (mips_tune == PROCESSOR_R3900)
  #define TUNE_MIPS4000               (mips_tune == PROCESSOR_R4000)
  #define TUNE_MIPS4120               (mips_tune == PROCESSOR_R4120)
-@@ -316,6 +317,7 @@
+@@ -316,6 +317,7 @@ struct mips_cpu_info {
  #define TUNE_SB1                    (mips_tune == PROCESSOR_SB1		\
  				     || mips_tune == PROCESSOR_SB1A)
  #define TUNE_P5600                  (mips_tune == PROCESSOR_P5600)
@@ -84,7 +83,7 @@ Index: gcc-7.2.0/gcc/config/mips/mips.h
  #define TUNE_I6400                  (mips_tune == PROCESSOR_I6400)
  
  /* Whether vector modes and intrinsics for ST Microelectronics
-@@ -637,6 +639,13 @@
+@@ -637,6 +639,13 @@ struct mips_cpu_info {
  									\
        if (TARGET_CACHE_BUILTIN)						\
  	builtin_define ("__GCC_HAVE_BUILTIN_MIPS_CACHE");		\
@@ -98,7 +97,7 @@ Index: gcc-7.2.0/gcc/config/mips/mips.h
        if (!ISA_HAS_LXC1_SXC1)						\
  	builtin_define ("__mips_no_lxc1_sxc1");				\
        if (!ISA_HAS_UNFUSED_MADD4 && !ISA_HAS_FUSED_MADD4)		\
-@@ -799,7 +808,7 @@
+@@ -799,7 +808,7 @@ struct mips_cpu_info {
    "%{mhard-float|msoft-float|mno-float|march=mips*:; \
       march=vr41*|march=m4k|march=4k*|march=24kc|march=24kec \
       |march=34kc|march=34kn|march=74kc|march=1004kc|march=5kc \
@@ -107,7 +106,7 @@ Index: gcc-7.2.0/gcc/config/mips/mips.h
       march=*: -mhard-float}"
  
  /* A spec condition that matches 32-bit options.  It only works if
-@@ -1105,7 +1114,8 @@
+@@ -1105,7 +1114,8 @@ struct mips_cpu_info {
  				      && (MODE) == V2SFmode))		\
  				 && !TARGET_MIPS16)
  
@@ -117,7 +116,7 @@ Index: gcc-7.2.0/gcc/config/mips/mips.h
  
  #define ISA_HAS_IEEE_754_LEGACY	(mips_isa_rev <= 5)
  
-@@ -1396,6 +1406,7 @@
+@@ -1396,6 +1406,7 @@ FP_ASM_SPEC "\
  
  #undef CC1_SPEC
  #define CC1_SPEC "\
@@ -127,8 +126,8 @@ Index: gcc-7.2.0/gcc/config/mips/mips.h
  
 Index: gcc-7.2.0/gcc/config/mips/mips.md
 ===================================================================
---- gcc-7.2.0.orig/gcc/config/mips/mips.md	2018-01-15 13:04:47.741559582 +0800
-+++ gcc-7.2.0/gcc/config/mips/mips.md	2018-01-15 13:27:02.156251648 +0800
+--- gcc-7.2.0.orig/gcc/config/mips/mips.md
++++ gcc-7.2.0/gcc/config/mips/mips.md
 @@ -67,6 +67,7 @@
    xlr
    xlp
@@ -192,9 +191,9 @@ Index: gcc-7.2.0/gcc/config/mips/mips.md
     (set_attr "mode" "<MODE>")])
 Index: gcc-7.2.0/gcc/config/mips/mips.opt
 ===================================================================
---- gcc-7.2.0.orig/gcc/config/mips/mips.opt	2018-01-15 13:04:47.741559582 +0800
-+++ gcc-7.2.0/gcc/config/mips/mips.opt	2018-01-15 13:04:47.741559582 +0800
-@@ -315,6 +315,10 @@
+--- gcc-7.2.0.orig/gcc/config/mips/mips.opt
++++ gcc-7.2.0/gcc/config/mips/mips.opt
+@@ -315,6 +315,10 @@ mmcu
  Target Report Var(TARGET_MCU)
  Use MCU instructions.
  
@@ -207,12 +206,12 @@ Index: gcc-7.2.0/gcc/config/mips/mips.opt
  Do not use a cache-flushing function before calling stack trampolines.
 Index: gcc-7.2.0/gcc/config/mips/mips-tables.opt
 ===================================================================
---- gcc-7.2.0.orig/gcc/config/mips/mips-tables.opt	2018-01-15 13:04:47.741559582 +0800
-+++ gcc-7.2.0/gcc/config/mips/mips-tables.opt	2018-01-15 13:04:47.741559582 +0800
-@@ -696,3 +696,6 @@
+--- gcc-7.2.0.orig/gcc/config/mips/mips-tables.opt
++++ gcc-7.2.0/gcc/config/mips/mips-tables.opt
+@@ -696,3 +696,6 @@ Enum(mips_arch_opt_value) String(xlp) Va
  EnumValue
  Enum(mips_arch_opt_value) String(i6400) Value(102) Canonical
  
 +EnumValue
-+Enum(mips_arch_opt_value) String(lexra) Value(99) Canonical
++Enum(mips_arch_opt_value) String(lexra) Value(103) Canonical
 +
