@@ -1,9 +1,9 @@
-From 152f316e7829f6aeb3a36009e7e5ec0f1d97d770 Mon Sep 17 00:00:00 2001
+From 0a6c701f92e1aa368c44632fa0985e92703354ed Mon Sep 17 00:00:00 2001
 From: Yangbo Lu <yangbo.lu@nxp.com>
-Date: Wed, 27 Sep 2017 10:33:26 +0800
-Subject: [PATCH] iommu: support layerscape
+Date: Wed, 17 Jan 2018 15:35:48 +0800
+Subject: [PATCH 22/30] iommu: support layerscape
 
-This is a integrated patch for layerscape smmu support.
+This is an integrated patch for layerscape smmu support.
 
 Signed-off-by: Eric Auger <eric.auger@redhat.com>
 Signed-off-by: Robin Murphy <robin.murphy@arm.com>
@@ -12,7 +12,7 @@ Signed-off-by: Sunil Goutham <sgoutham@cavium.com>
 Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
 ---
  drivers/iommu/amd_iommu.c    |  56 ++++++----
- drivers/iommu/arm-smmu-v3.c  | 117 ++++++++++++++-------
+ drivers/iommu/arm-smmu-v3.c  | 111 ++++++++++++++------
  drivers/iommu/arm-smmu.c     | 100 +++++++++++++++---
  drivers/iommu/dma-iommu.c    | 242 ++++++++++++++++++++++++++++++++++++-------
  drivers/iommu/intel-iommu.c  |  92 ++++++++++++----
@@ -21,7 +21,7 @@ Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
  drivers/iommu/mtk_iommu_v1.c |   2 +
  include/linux/dma-iommu.h    |  11 ++
  include/linux/iommu.h        |  55 +++++++---
- 10 files changed, 739 insertions(+), 157 deletions(-)
+ 10 files changed, 739 insertions(+), 151 deletions(-)
 
 --- a/drivers/iommu/amd_iommu.c
 +++ b/drivers/iommu/amd_iommu.c
@@ -995,7 +995,7 @@ Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
  };
  
  struct dmar_atsr_unit {
-@@ -4252,27 +4253,40 @@ static inline void init_iommu_pm_ops(voi
+@@ -4251,27 +4252,40 @@ static inline void init_iommu_pm_ops(voi
  int __init dmar_parse_one_rmrr(struct acpi_dmar_header *header, void *arg)
  {
  	struct acpi_dmar_reserved_memory *rmrr;
@@ -1041,7 +1041,7 @@ Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
  }
  
  static struct dmar_atsr_unit *dmar_find_atsr(struct acpi_dmar_atsr *atsr)
-@@ -4486,6 +4500,7 @@ static void intel_iommu_free_dmars(void)
+@@ -4485,6 +4499,7 @@ static void intel_iommu_free_dmars(void)
  	list_for_each_entry_safe(rmrru, rmrr_n, &dmar_rmrr_units, list) {
  		list_del(&rmrru->list);
  		dmar_free_dev_scope(&rmrru->devices, &rmrru->devices_cnt);
@@ -1049,7 +1049,7 @@ Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
  		kfree(rmrru);
  	}
  
-@@ -5221,6 +5236,45 @@ static void intel_iommu_remove_device(st
+@@ -5220,6 +5235,45 @@ static void intel_iommu_remove_device(st
  	iommu_device_unlink(iommu->iommu_dev, dev);
  }
  
@@ -1095,7 +1095,7 @@ Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
  #ifdef CONFIG_INTEL_IOMMU_SVM
  #define MAX_NR_PASID_BITS (20)
  static inline unsigned long intel_iommu_get_pts(struct intel_iommu *iommu)
-@@ -5351,19 +5405,21 @@ struct intel_iommu *intel_svm_device_to_
+@@ -5350,19 +5404,21 @@ struct intel_iommu *intel_svm_device_to_
  #endif /* CONFIG_INTEL_IOMMU_SVM */
  
  static const struct iommu_ops intel_iommu_ops = {

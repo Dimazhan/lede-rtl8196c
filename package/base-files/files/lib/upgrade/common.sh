@@ -78,18 +78,18 @@ rootfs_type() {
 
 get_image() { # <source> [ <command> ]
 	local from="$1"
-	local cat="$2"
+	local cmd="$2"
 
-	if [ -z "$cat" ]; then
+	if [ -z "$cmd" ]; then
 		local magic="$(dd if="$from" bs=2 count=1 2>/dev/null | hexdump -n 2 -e '1/1 "%02x"')"
 		case "$magic" in
-			1f8b) cat="zcat";;
-			425a) cat="bzcat";;
-			*) cat="cat";;
+			1f8b) cmd="zcat";;
+			425a) cmd="bzcat";;
+			*) cmd="cat";;
 		esac
 	fi
 
-	$cat "$from" 2>/dev/null
+	cat "$from" 2>/dev/null | $cmd
 }
 
 get_magic_word() {
@@ -101,7 +101,7 @@ get_magic_long() {
 }
 
 export_bootdevice() {
-	local cmdline uuid disk uevent
+	local cmdline uuid disk uevent line
 	local MAJOR MINOR DEVNAME DEVTYPE
 
 	if read cmdline < /proc/cmdline; then
@@ -134,8 +134,9 @@ export_bootdevice() {
 		esac
 
 		if [ -e "$uevent" ]; then
-			. "$uevent"
-
+			while read line; do
+				export -n "$line"
+			done < "$uevent"
 			export BOOTDEV_MAJOR=$MAJOR
 			export BOOTDEV_MINOR=$MINOR
 			return 0
@@ -147,10 +148,12 @@ export_bootdevice() {
 
 export_partdevice() {
 	local var="$1" offset="$2"
-	local uevent MAJOR MINOR DEVNAME DEVTYPE
+	local uevent line MAJOR MINOR DEVNAME DEVTYPE
 
 	for uevent in /sys/class/block/*/uevent; do
-		. "$uevent"
+		while read line; do
+			export -n "$line"
+		done < "$uevent"
 		if [ $BOOTDEV_MAJOR = $MAJOR -a $(($BOOTDEV_MINOR + $offset)) = $MINOR -a -b "/dev/$DEVNAME" ]; then
 			export "$var=$DEVNAME"
 			return 0
@@ -219,6 +222,7 @@ default_do_upgrade() {
 	else
 		get_image "$1" "$2" | mtd write - "${PART_NAME:-image}"
 	fi
+	[ $? -ne 0 ] && exit 1
 }
 
 do_upgrade_stage2() {

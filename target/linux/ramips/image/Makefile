@@ -31,7 +31,7 @@ loadaddr-$(CONFIG_TARGET_ramips_mt7621) := 0x80001000
 
 KERNEL_LOADADDR := $(loadaddr-y)
 
-KERNEL_DTB = kernel-bin | patch-dtb | lzma
+KERNEL_DTB = kernel-bin | patch-dtb | lzma -d21
 define Device/Default
   PROFILES = Default $$(DTS)
   KERNEL_DEPENDS = $$(wildcard ../dts/$$(DTS).dts)
@@ -55,6 +55,22 @@ define Build/trx
 		-m $(IMAGE_SIZE) \
 		-f $(IMAGE_KERNEL) \
 		-a 4 -f $(IMAGE_ROOTFS)
+endef
+
+define Build/loader-common
+	rm -rf $@.src
+	$(MAKE) -C lzma-loader \
+		PKG_BUILD_DIR="$@.src" \
+		TARGET_DIR="$(dir $@)" LOADER_NAME="$(notdir $@)" \
+		BOARD="$(BOARDNAME)" PLATFORM="$(PLATFORM)" \
+		LZMA_TEXT_START=0x82000000 LOADADDR=$(KERNEL_LOADADDR) \
+		$(1) compile loader.$(LOADER_TYPE)
+	mv "$@.$(LOADER_TYPE)" "$@"
+	rm -rf $@.src
+endef
+
+define Build/loader-kernel
+	$(call Build/loader-common,LOADER_DATA="$@")
 endef
 
 define Build/relocate-kernel
@@ -111,6 +127,30 @@ define Build/wrg-header
 	mv $@.new $@
 endef
 
+# combine kernel and rootfs into one image
+# mkdlinkfw <type> <optional extra arguments to mkdlinkfw binary>
+
+define Build/mkdlinkfw
+	-$(STAGING_DIR_HOST)/bin/mkdlinkfw \
+		-k $(IMAGE_KERNEL) \
+		-r $(IMAGE_ROOTFS) \
+		-o $@ \
+		-s $(DLINK_FIRMWARE_SIZE)
+endef
+
+define Build/mkdlinkfw-factory
+	-$(STAGING_DIR_HOST)/bin/mkdlinkfw \
+		-m $(DLINK_ROM_ID) -f $(DLINK_FAMILY_MEMBER) \
+		-F $@ \
+		-o $@.new \
+		-s $(DLINK_FIRMWARE_SIZE)
+	mv $@.new $@
+endef
+
+define Build/zyimage
+	$(STAGING_DIR_HOST)/bin/zyimage $(1) $@
+endef
+
 #
 # The real magic happens inside these templates
 #
@@ -118,7 +158,7 @@ endef
 # $(2), filename of image data
 # $(3), output filename
 define MkImage
-	$(eval imagename=$(if $(4),$(4),MIPS OpenWrt Linux-$(LINUX_VERSION)))
+	$(eval imagename=$(if $(4),$(4),MIPS $(VERSION_DIST) Linux-$(LINUX_VERSION)))
 	-mkimage -A mips -O linux -T kernel -C $(1) -a $(loadaddr-y) -e $(loadaddr-y) \
 		-n "$(imagename)" \
 		-d $(2) $(3)

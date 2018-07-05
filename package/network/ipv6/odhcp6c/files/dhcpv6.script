@@ -48,7 +48,9 @@ setup_interface () {
 		fi
 	done
 
-	[ -n "$USERPREFIX" ] && proto_add_ipv6_prefix "$USERPREFIX"
+	for prefix in $USERPREFIX; do
+		proto_add_ipv6_prefix "$prefix"
+	done
 
 	# Merge addresses
 	for entry in $RA_ADDRESSES; do
@@ -168,6 +170,7 @@ setup_interface () {
 		json_add_string tunlink "$INTERFACE"
 		[ -n "$ZONE_MAP" ] || ZONE_MAP=$ZONE
 		[ -n "$ZONE_MAP" ] && json_add_string zone "$ZONE_MAP"
+		[ -n "$ENCAPLIMIT_MAP" ] && json_add_string encaplimit "$ENCAPLIMIT_MAP"
 		[ -n "$IFACE_MAP_DELEGATE" ] && json_add_boolean delegate "$IFACE_MAP_DELEGATE"
 		json_close_object
 		ubus call network add_dynamic "$(json_dump)"
@@ -181,6 +184,7 @@ setup_interface () {
 		json_add_string tunlink "$INTERFACE"
 		[ -n "$ZONE_DSLITE" ] || ZONE_DSLITE=$ZONE
 		[ -n "$ZONE_DSLITE" ] && json_add_string zone "$ZONE_DSLITE"
+		[ -n "$ENCAPLIMIT_DSLITE" ] && json_add_string encaplimit "$ENCAPLIMIT_DSLITE"
 		[ -n "$IFACE_DSLITE_DELEGATE" ] && json_add_boolean delegate "$IFACE_DSLITE_DELEGATE"
 		json_close_object
 		ubus call network add_dynamic "$(json_dump)"

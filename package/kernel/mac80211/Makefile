@@ -11,7 +11,7 @@ include $(INCLUDE_DIR)/kernel.mk
 PKG_NAME:=mac80211
 
 PKG_VERSION:=2017-11-01
-PKG_RELEASE:=2
+PKG_RELEASE:=9
 PKG_SOURCE_URL:=http://mirror2.openwrt.org/sources
 PKG_HASH:=8437ab7886b988c8152e7a4db30b7f41009e49a3b2cb863edd05da1ecd7eb05a
 
@@ -36,6 +36,7 @@ PKG_DRIVERS = \
 	mt7601u \
 	mwl8k mwifiex-pcie mwifiex-sdio \
 	p54-common p54-pci p54-spi p54-usb \
+	rsi91x rsi91x-usb rsi91x-sdio\
 	rt2x00-lib rt2x00-pci rt2x00-usb \
 	rt2400-pci rt2500-pci rt2500-usb \
 	rt2800-lib rt2800-mmio rt2800-pci rt2800-soc rt2800-usb \
@@ -73,6 +74,8 @@ PKG_CONFIG_DEPENDS:= \
 	CONFIG_PACKAGE_RTLWIFI_DEBUG \
 	CONFIG_ATH9K_SUPPORT_PCOEM \
 	CONFIG_ATH9K_TX99 \
+	CONFIG_ATH10K_LEDS \
+	CONFIG_ATH10K_THERMAL \
 	CONFIG_ATH_USER_REGD \
 
 include $(INCLUDE_DIR)/package.mk
@@ -202,7 +205,7 @@ endef
 define KernelPackage/ath
   $(call KernelPackage/mac80211/Default)
   TITLE:=Atheros common driver part
-  DEPENDS+= @PCI_SUPPORT||USB_SUPPORT||TARGET_ar71xx||TARGET_ath25 +kmod-mac80211
+  DEPENDS+= @PCI_SUPPORT||USB_SUPPORT||TARGET_ar71xx||TARGET_ath79||TARGET_ath25 +kmod-mac80211
   FILES:=$(PKG_BUILD_DIR)/drivers/net/wireless/ath/ath.ko
   MENU:=1
 endef
@@ -267,7 +270,7 @@ define KernelPackage/ath9k-common
   TITLE:=Atheros 802.11n wireless devices (common code for ath9k and ath9k_htc)
   URL:=https://wireless.wiki.kernel.org/en/users/drivers/ath9k
   HIDDEN:=1
-  DEPENDS+= @PCI_SUPPORT||USB_SUPPORT||TARGET_ar71xx +kmod-ath +@DRIVER_11N_SUPPORT +@DRIVER_11W_SUPPORT
+  DEPENDS+= @PCI_SUPPORT||USB_SUPPORT||TARGET_ar71xx||TARGET_ath79 +kmod-ath +@DRIVER_11N_SUPPORT +@DRIVER_11W_SUPPORT
   FILES:= \
 	$(PKG_BUILD_DIR)/drivers/net/wireless/ath/ath9k/ath9k_common.ko \
 	$(PKG_BUILD_DIR)/drivers/net/wireless/ath/ath9k/ath9k_hw.ko
@@ -277,7 +280,7 @@ define KernelPackage/ath9k
   $(call KernelPackage/mac80211/Default)
   TITLE:=Atheros 802.11n PCI wireless cards support
   URL:=https://wireless.wiki.kernel.org/en/users/drivers/ath9k
-  DEPENDS+= @PCI_SUPPORT||TARGET_ar71xx +kmod-ath9k-common
+  DEPENDS+= @PCI_SUPPORT||TARGET_ar71xx||TARGET_ath79 +kmod-ath9k-common
   FILES:= \
 	$(PKG_BUILD_DIR)/drivers/net/wireless/ath/ath9k/ath9k.ko
   AUTOLOAD:=$(call AutoProbe,ath9k)
@@ -300,7 +303,7 @@ define KernelPackage/ath9k/config
 
 	config ATH9K_UBNTHSR
 		bool "Support for Ubiquiti UniFi Outdoor+ access point"
-		depends on PACKAGE_kmod-ath9k && TARGET_ar71xx_generic
+		depends on PACKAGE_kmod-ath9k && (TARGET_ar71xx_generic||TARGET_ath79)
 		default y
 
 endef
@@ -324,7 +327,8 @@ define KernelPackage/ath10k
   $(call KernelPackage/mac80211/Default)
   TITLE:=Atheros 802.11ac wireless cards support
   URL:=https://wireless.wiki.kernel.org/en/users/drivers/ath10k
-  DEPENDS+= @PCI_SUPPORT +kmod-ath +@DRIVER_11N_SUPPORT +@DRIVER_11AC_SUPPORT +@DRIVER_11W_SUPPORT
+  DEPENDS+= @PCI_SUPPORT +kmod-ath +@DRIVER_11N_SUPPORT +@DRIVER_11AC_SUPPORT +@DRIVER_11W_SUPPORT \
+	+ATH10K_THERMAL:kmod-hwmon-core +ATH10K_THERMAL:kmod-thermal
   FILES:= \
 	$(PKG_BUILD_DIR)/drivers/net/wireless/ath/ath10k/ath10k_core.ko \
 	$(PKG_BUILD_DIR)/drivers/net/wireless/ath/ath10k/ath10k_pci.ko
@@ -335,6 +339,19 @@ define KernelPackage/ath10k/description
 This module adds support for wireless adapters based on
 Atheros IEEE 802.11ac family of chipsets. For now only
 PCI is supported.
+endef
+
+define KernelPackage/ath10k/config
+
+       config ATH10K_LEDS
+               bool "Enable LED support"
+               default y
+               depends on PACKAGE_kmod-ath10k
+
+       config ATH10K_THERMAL
+               bool "Enable thermal sensors and throttling support"
+               depends on PACKAGE_kmod-ath10k
+
 endef
 
 #Broadcom firmware
@@ -988,7 +1005,11 @@ IPW2100_NAME:=ipw2100-fw
 IPW2100_VERSION:=1.3
 
 define Download/ipw2100
-  URL:=http://bughost.org/firmware/
+  URL:= \
+	https://src.fedoraproject.org/repo/pkgs/ipw2100-firmware/ipw2100-fw-1.3.tgz/46aa75bcda1a00efa841f9707bbbd113/ \
+	https://archlinux.mirror.pkern.at/other/packages/ipw2100-fw/ \
+	http://mirror.ox.ac.uk/sites/ftp.openbsd.org/pub/OpenBSD/distfiles/firmware/ \
+	http://firmware.openbsd.org/firmware-dist/
   FILE:=$(IPW2100_NAME)-$(IPW2100_VERSION).tgz
   HASH:=e1107c455e48d324a616b47a622593bc8413dcce72026f72731c0b03dae3a7a2
 endef
@@ -1012,7 +1033,11 @@ IPW2200_NAME:=ipw2200-fw
 IPW2200_VERSION:=3.1
 
 define Download/ipw2200
-  URL:=http://bughost.org/firmware/
+  URL:= \
+	https://src.fedoraproject.org/repo/pkgs/ipw2200-firmware/ipw2200-fw-3.1.tgz/eaba788643c7cc7483dd67ace70f6e99/ \
+	https://archlinux.mirror.pkern.at/other/packages/ipw2200-fw/ \
+	http://mirror.ox.ac.uk/sites/ftp.openbsd.org/pub/OpenBSD/distfiles/firmware/ \
+	http://firmware.openbsd.org/firmware-dist/
   FILE:=$(IPW2200_NAME)-$(IPW2200_VERSION).tgz
   HASH:=c6818c11c18cc030d55ff83f64b2bad8feef485e7742f84f94a61d811a6258bd
 endef
@@ -1168,6 +1193,31 @@ define KernelPackage/p54-spi
   FILES:=$(PKG_BUILD_DIR)/drivers/net/wireless/intersil/p54/p54spi.ko
   AUTOLOAD:=$(call AutoProbe,p54spi)
 endef
+
+define KernelPackage/rsi91x
+  $(call KernelPackage/mac80211/Default)
+  TITLE:=Redpine Signals Inc 91x WLAN driver support
+  DEPENDS+= +kmod-mac80211 +rs9113-firmware
+  FILES:=$(PKG_BUILD_DIR)/drivers/net/wireless/rsi/rsi_91x.ko
+endef
+
+define KernelPackage/rsi91x-usb
+  $(call KernelPackage/mac80211/Default)
+  TITLE:=Redpine Signals USB bus support
+  DEPENDS+= +kmod-mac80211 +kmod-usb2 +kmod-rsi91x +rs9113-firmware
+  FILES:=$(PKG_BUILD_DIR)/drivers/net/wireless/rsi/rsi_usb.ko
+  AUTOLOAD:=$(call AutoProbe,rsi_usb)
+endef
+
+define KernelPackage/rsi91x-sdio
+  $(call KernelPackage/mac80211/Default)
+  TITLE:=Redpine Signals SDIO bus support
+  DEPENDS+= +kmod-mac80211 +kmod-mmc +kmod-rsi91x +rs9113-firmware
+  FILES:=$(PKG_BUILD_DIR)/drivers/net/wireless/rsi/rsi_sdio.ko
+  AUTOLOAD:=$(call AutoProbe,rsi_sdio)
+endef
+
+
 
 define KernelPackage/rt2x00/Default
   $(call KernelPackage/mac80211/Default)
@@ -1584,12 +1634,15 @@ config-$(CONFIG_PACKAGE_ATH_SPECTRAL) += ATH9K_COMMON_SPECTRAL ATH10K_SPECTRAL
 config-$(call config_package,ath9k) += ATH9K
 config-$(call config_package,ath9k-common) += ATH9K_COMMON
 config-$(CONFIG_TARGET_ar71xx) += ATH9K_AHB
-config-$(CONFIG_TARGET_ipq806x) += ATH10K_AHB
+config-$(CONFIG_TARGET_ath79) += ATH9K_AHB
+config-$(CONFIG_TARGET_ipq40xx) += ATH10K_AHB
 config-$(CONFIG_PCI) += ATH9K_PCI
 config-$(CONFIG_ATH_USER_REGD) += ATH_USER_REGD
 config-$(CONFIG_ATH9K_SUPPORT_PCOEM) += ATH9K_PCOEM
 config-$(CONFIG_ATH9K_TX99) += ATH9K_TX99
 config-$(CONFIG_ATH9K_UBNTHSR) += ATH9K_UBNTHSR
+config-$(CONFIG_ATH10K_LEDS) += ATH10K_LEDS
+config-$(CONFIG_ATH10K_THERMAL) += ATH10K_THERMAL
 
 config-$(call config_package,ath9k-htc) += ATH9K_HTC
 config-$(call config_package,ath10k) += ATH10K ATH10K_PCI
@@ -1691,6 +1744,9 @@ config-$(call config_package,wl12xx) += WL12XX
 config-$(call config_package,wl18xx) += WL18XX
 config-y += WL_TI WILINK_PLATFORM_DATA
 config-$(call config_package,zd1211rw) += ZD1211RW
+config-$(call config_package,rsi91x) += RSI_91X
+config-$(call config_package,rsi91x-usb) += RSI_USB
+config-$(call config_package,rsi91x-sdio) += RSI_SDIO
 
 config-$(call config_package,rtlwifi) += RTL_CARDS RTLWIFI
 config-$(call config_package,rtlwifi-pci) += RTLWIFI_PCI
@@ -1760,11 +1816,16 @@ ifneq ($(CONFIG_PACKAGE_kmod-cfg80211)$(CONFIG_PACKAGE_kmod-lib80211),)
  endef
 endif
 
-define Build/Configure
-	cmp $(PKG_BUILD_DIR)/include/linux/ath9k_platform.h $(LINUX_DIR)/include/linux/ath9k_platform.h
-	cmp $(PKG_BUILD_DIR)/include/linux/ath5k_platform.h $(LINUX_DIR)/include/linux/ath5k_platform.h
-	cmp $(PKG_BUILD_DIR)/include/linux/rt2x00_platform.h $(LINUX_DIR)/include/linux/rt2x00_platform.h
-endef
+#do not Build/Configure for EXTERNAL KERNEL
+ifeq ($(strip $(CONFIG_EXTERNAL_KERNEL_TREE)),"")
+  ifeq ($(strip $(CONFIG_KERNEL_GIT_CLONE_URI)),"")
+    define Build/Configure
+	  cmp $(PKG_BUILD_DIR)/include/linux/ath9k_platform.h $(LINUX_DIR)/include/linux/ath9k_platform.h
+	  cmp $(PKG_BUILD_DIR)/include/linux/ath5k_platform.h $(LINUX_DIR)/include/linux/ath5k_platform.h
+	  cmp $(PKG_BUILD_DIR)/include/linux/rt2x00_platform.h $(LINUX_DIR)/include/linux/rt2x00_platform.h
+    endef
+  endif
+endif
 
 define Build/Compile
 	$(SH_FUNC) var2file "$(call shvar,mac80211_config)" $(PKG_BUILD_DIR)/.config
@@ -1821,7 +1882,7 @@ define KernelPackage/cfg80211/install
 	$(INSTALL_DATA) ./files/lib/wifi/mac80211.sh $(1)/lib/wifi
 	$(INSTALL_BIN) ./files/lib/netifd/wireless/mac80211.sh $(1)/lib/netifd/wireless
 	$(INSTALL_DIR) $(1)/etc/hotplug.d/ieee80211
-	$(INSTALL_DATA) ./files/mac80211.hotplug $(1)/etc/hotplug.d/ieee80211/00-wifi-detect
+	$(INSTALL_DATA) ./files/mac80211.hotplug $(1)/etc/hotplug.d/ieee80211/10-wifi-detect
 endef
 
 define KernelPackage/ipw2100/install
@@ -1883,6 +1944,9 @@ $(eval $(call KernelPackage,p54-common))
 $(eval $(call KernelPackage,p54-pci))
 $(eval $(call KernelPackage,p54-usb))
 $(eval $(call KernelPackage,p54-spi))
+$(eval $(call KernelPackage,rsi91x))
+$(eval $(call KernelPackage,rsi91x-usb))
+$(eval $(call KernelPackage,rsi91x-sdio))
 $(eval $(call KernelPackage,rt2x00-lib))
 $(eval $(call KernelPackage,rt2x00-mmio))
 $(eval $(call KernelPackage,rt2x00-pci))
