@@ -1,10 +1,10 @@
 Add support for lexra architecture (lx4180) support with minimum modifications
 
-Index: gcc-7.2.0/gcc/config/mips/mips.c
+Index: gcc-7.3.0/gcc/config/mips/mips.c
 ===================================================================
---- gcc-7.2.0.orig/gcc/config/mips/mips.c
-+++ gcc-7.2.0/gcc/config/mips/mips.c
-@@ -7986,6 +7986,8 @@ mips_block_move_straight (rtx dest, rtx
+--- gcc-7.3.0.orig/gcc/config/mips/mips.c
++++ gcc-7.3.0/gcc/config/mips/mips.c
+@@ -7992,6 +7992,8 @@ mips_block_move_straight (rtx dest, rtx
        if (MEM_ALIGN (src) == BITS_PER_WORD / 2
  	  && MEM_ALIGN (dest) == BITS_PER_WORD / 2)
  	bits = BITS_PER_WORD / 2;
@@ -13,7 +13,7 @@ Index: gcc-7.2.0/gcc/config/mips/mips.c
        else
  	bits = BITS_PER_WORD;
      }
-@@ -8361,6 +8363,8 @@ mips_expand_ext_as_unaligned_load (rtx d
+@@ -8367,6 +8369,8 @@ mips_expand_ext_as_unaligned_load (rtx d
      }
    else
      {
@@ -22,7 +22,7 @@ Index: gcc-7.2.0/gcc/config/mips/mips.c
        emit_insn (gen_mov_lwl (temp, src, left));
        emit_insn (gen_mov_lwr (dest, copy_rtx (src), right, temp));
      }
-@@ -8404,6 +8408,8 @@ mips_expand_ins_as_unaligned_store (rtx
+@@ -8410,6 +8414,8 @@ mips_expand_ins_as_unaligned_store (rtx
      }
    else
      {
@@ -31,7 +31,7 @@ Index: gcc-7.2.0/gcc/config/mips/mips.c
        emit_insn (gen_mov_swl (dest, src, left));
        emit_insn (gen_mov_swr (copy_rtx (dest), copy_rtx (src), right));
      }
-@@ -19663,6 +19669,10 @@ mips_option_override (void)
+@@ -19669,6 +19675,10 @@ mips_option_override (void)
    if (mips_arch_info == 0)
      mips_set_architecture (mips_default_arch ());
  
@@ -42,10 +42,10 @@ Index: gcc-7.2.0/gcc/config/mips/mips.c
    if (ABI_NEEDS_64BIT_REGS && !ISA_HAS_64BIT_REGS)
      error ("%<-march=%s%> is not compatible with the selected ABI",
  	   mips_arch_info->name);
-Index: gcc-7.2.0/gcc/config/mips/mips-cpus.def
+Index: gcc-7.3.0/gcc/config/mips/mips-cpus.def
 ===================================================================
---- gcc-7.2.0.orig/gcc/config/mips/mips-cpus.def
-+++ gcc-7.2.0/gcc/config/mips/mips-cpus.def
+--- gcc-7.3.0.orig/gcc/config/mips/mips-cpus.def
++++ gcc-7.3.0/gcc/config/mips/mips-cpus.def
 @@ -171,3 +171,7 @@ MIPS_CPU ("xlp", PROCESSOR_XLP, 65, PTF_
  
  /* MIPS64 Release 6 processors.  */
@@ -54,10 +54,10 @@ Index: gcc-7.2.0/gcc/config/mips/mips-cpus.def
 +/* Lexra processors */
 +MIPS_CPU ("lexra", PROCESSOR_LEXRA, 1, 0)
 +
-Index: gcc-7.2.0/gcc/config/mips/mips.h
+Index: gcc-7.3.0/gcc/config/mips/mips.h
 ===================================================================
---- gcc-7.2.0.orig/gcc/config/mips/mips.h
-+++ gcc-7.2.0/gcc/config/mips/mips.h
+--- gcc-7.3.0.orig/gcc/config/mips/mips.h
++++ gcc-7.3.0/gcc/config/mips/mips.h
 @@ -286,6 +286,7 @@ struct mips_cpu_info {
  				     || mips_arch == PROCESSOR_SB1A)
  #define TARGET_SR71K                (mips_arch == PROCESSOR_SR71000)
@@ -124,10 +124,10 @@ Index: gcc-7.2.0/gcc/config/mips/mips.h
  %{G*} %{EB:-meb} %{EL:-mel} %{EB:%{EL:%emay not use both -EB and -EL}} \
  %(subtarget_cc1_spec)"
  
-Index: gcc-7.2.0/gcc/config/mips/mips.md
+Index: gcc-7.3.0/gcc/config/mips/mips.md
 ===================================================================
---- gcc-7.2.0.orig/gcc/config/mips/mips.md
-+++ gcc-7.2.0/gcc/config/mips/mips.md
+--- gcc-7.3.0.orig/gcc/config/mips/mips.md
++++ gcc-7.3.0/gcc/config/mips/mips.md
 @@ -67,6 +67,7 @@
    xlr
    xlp
@@ -189,10 +189,10 @@ Index: gcc-7.2.0/gcc/config/mips/mips.md
    "<store>r\t%z1,%2"
    [(set_attr "move_type" "store")
     (set_attr "mode" "<MODE>")])
-Index: gcc-7.2.0/gcc/config/mips/mips.opt
+Index: gcc-7.3.0/gcc/config/mips/mips.opt
 ===================================================================
---- gcc-7.2.0.orig/gcc/config/mips/mips.opt
-+++ gcc-7.2.0/gcc/config/mips/mips.opt
+--- gcc-7.3.0.orig/gcc/config/mips/mips.opt
++++ gcc-7.3.0/gcc/config/mips/mips.opt
 @@ -315,6 +315,10 @@ mmcu
  Target Report Var(TARGET_MCU)
  Use MCU instructions.
@@ -204,10 +204,10 @@ Index: gcc-7.2.0/gcc/config/mips/mips.opt
  mno-flush-func
  Target RejectNegative
  Do not use a cache-flushing function before calling stack trampolines.
-Index: gcc-7.2.0/gcc/config/mips/mips-tables.opt
+Index: gcc-7.3.0/gcc/config/mips/mips-tables.opt
 ===================================================================
---- gcc-7.2.0.orig/gcc/config/mips/mips-tables.opt
-+++ gcc-7.2.0/gcc/config/mips/mips-tables.opt
+--- gcc-7.3.0.orig/gcc/config/mips/mips-tables.opt
++++ gcc-7.3.0/gcc/config/mips/mips-tables.opt
 @@ -696,3 +696,6 @@ Enum(mips_arch_opt_value) String(xlp) Va
  EnumValue
  Enum(mips_arch_opt_value) String(i6400) Value(102) Canonical
