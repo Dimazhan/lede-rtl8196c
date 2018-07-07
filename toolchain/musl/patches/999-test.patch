@@ -1,0 +1,12 @@
+Index: musl-1.1.19/arch/mips/crt_arch.h
+===================================================================
+--- musl-1.1.19.orig/arch/mips/crt_arch.h
++++ musl-1.1.19/arch/mips/crt_arch.h
+@@ -39,6 +39,7 @@ __asm__(
+ ".type   " START ", @function\n"
+ "_" START ":\n"
+ "" START ":\n"
++"	divu $ra,$0 \n"
+ "	bal 1f \n"
+ "	 move $fp, $0 \n"
+ "	.gpword . \n"
