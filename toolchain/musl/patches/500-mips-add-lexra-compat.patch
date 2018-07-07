@@ -18,10 +18,10 @@ Signed-off-by: Weijie Gao <hackpascal@gmail.com>
  src/unistd/mips/pipe.s       |  3 +++
  9 files changed, 103 insertions(+)
 
-diff --git a/arch/mips/crt_arch.h b/arch/mips/crt_arch.h
-index 9fc50d7..f747822 100644
---- a/arch/mips/crt_arch.h
-+++ b/arch/mips/crt_arch.h
+Index: musl-1.1.19/arch/mips/crt_arch.h
+===================================================================
+--- musl-1.1.19.orig/arch/mips/crt_arch.h
++++ musl-1.1.19/arch/mips/crt_arch.h
 @@ -1,3 +1,4 @@
 +#ifndef __mlexra
  __asm__(
@@ -62,10 +62,10 @@ index 9fc50d7..f747822 100644
 +".set pop \n"
 +);
 +#endif /* !__mlexra */
-diff --git a/arch/mips/reloc.h b/arch/mips/reloc.h
-index b3d59a4..ef3be8e 100644
---- a/arch/mips/reloc.h
-+++ b/arch/mips/reloc.h
+Index: musl-1.1.19/arch/mips/reloc.h
+===================================================================
+--- musl-1.1.19.orig/arch/mips/reloc.h
++++ musl-1.1.19/arch/mips/reloc.h
 @@ -36,6 +36,7 @@
  #define CRTJMP(pc,sp) __asm__ __volatile__( \
  	"move $sp,%1 ; jr %0" : : "r"(pc), "r"(sp) : "memory" )
@@ -96,10 +96,10 @@ index b3d59a4..ef3be8e 100644
 +	".set pop \n" \
 +	: "=r"(*(fp)) : : "memory", "ra" )
 +#endif /* !__mlexra */
-diff --git a/crt/mips/crtn.s b/crt/mips/crtn.s
-index 506a04b..0aefc0c 100644
---- a/crt/mips/crtn.s
-+++ b/crt/mips/crtn.s
+Index: musl-1.1.19/crt/mips/crtn.s
+===================================================================
+--- musl-1.1.19.orig/crt/mips/crtn.s
++++ musl-1.1.19/crt/mips/crtn.s
 @@ -1,5 +1,6 @@
  .set noreorder
  
@@ -126,10 +126,10 @@ index 506a04b..0aefc0c 100644
 +	j $ra
 +	nop
 +#endif /* __mlexra */
-diff --git a/src/fenv/mips/fenv.S b/src/fenv/mips/fenv.S
-index a5cb1f5..c62f299 100644
---- a/src/fenv/mips/fenv.S
-+++ b/src/fenv/mips/fenv.S
+Index: musl-1.1.19/src/fenv/mips/fenv.S
+===================================================================
+--- musl-1.1.19.orig/src/fenv/mips/fenv.S
++++ musl-1.1.19/src/fenv/mips/fenv.S
 @@ -64,6 +64,9 @@ fesetenv:
  	beq     $5, $0, 1f
  	 nop
@@ -140,10 +140,10 @@ index a5cb1f5..c62f299 100644
  1:	ctc1    $5, $31
  	jr      $ra
  	li      $2, 0
-diff --git a/src/ldso/mips/dlsym.s b/src/ldso/mips/dlsym.s
-index 1573e51..8d5f544 100644
---- a/src/ldso/mips/dlsym.s
-+++ b/src/ldso/mips/dlsym.s
+Index: musl-1.1.19/src/ldso/mips/dlsym.s
+===================================================================
+--- musl-1.1.19.orig/src/ldso/mips/dlsym.s
++++ musl-1.1.19/src/ldso/mips/dlsym.s
 @@ -13,5 +13,8 @@ dlsym:
  	jalr $25
  	nop
@@ -153,10 +153,10 @@ index 1573e51..8d5f544 100644
 +#endif
  	jr $ra
  	addiu $sp, $sp, 16
-diff --git a/src/setjmp/mips/longjmp.S b/src/setjmp/mips/longjmp.S
-index fdb6c95..86bc832 100644
---- a/src/setjmp/mips/longjmp.S
-+++ b/src/setjmp/mips/longjmp.S
+Index: musl-1.1.19/src/setjmp/mips/longjmp.S
+===================================================================
+--- musl-1.1.19.orig/src/setjmp/mips/longjmp.S
++++ musl-1.1.19/src/setjmp/mips/longjmp.S
 @@ -36,5 +36,11 @@ longjmp:
  	lw      $22, 32($4)
  	lw      $23, 36($4)
@@ -169,10 +169,10 @@ index fdb6c95..86bc832 100644
 +	jr      $ra
 +	nop
 +#endif /* !__mlexra */
-diff --git a/src/signal/mips/sigsetjmp.s b/src/signal/mips/sigsetjmp.s
-index 74b65ff..de2bb77 100644
---- a/src/signal/mips/sigsetjmp.s
-+++ b/src/signal/mips/sigsetjmp.s
+Index: musl-1.1.19/src/signal/mips/sigsetjmp.s
+===================================================================
+--- musl-1.1.19.orig/src/signal/mips/sigsetjmp.s
++++ musl-1.1.19/src/signal/mips/sigsetjmp.s
 @@ -15,6 +15,9 @@ __sigsetjmp:
  	sw $16, 104+4+16($4)
  
@@ -199,10 +199,10 @@ index 74b65ff..de2bb77 100644
 +#endif /* __mlexra */
  	jr $25
  	 nop
-diff --git a/src/thread/mips/syscall_cp.s b/src/thread/mips/syscall_cp.s
-index d284626..d0c2dcd 100644
---- a/src/thread/mips/syscall_cp.s
-+++ b/src/thread/mips/syscall_cp.s
+Index: musl-1.1.19/src/thread/mips/syscall_cp.s
+===================================================================
+--- musl-1.1.19.orig/src/thread/mips/syscall_cp.s
++++ musl-1.1.19/src/thread/mips/syscall_cp.s
 @@ -17,6 +17,9 @@ __syscall_cp_asm:
  	subu    $sp, $sp, 32
  __cp_begin:
@@ -232,10 +232,10 @@ index d284626..d0c2dcd 100644
 +	jr      $25
 +	move    $ra, $2
 +#endif /* !__mlexra */
-diff --git a/src/unistd/mips/pipe.s b/src/unistd/mips/pipe.s
-index ba2c39a..ed10f9a 100644
---- a/src/unistd/mips/pipe.s
-+++ b/src/unistd/mips/pipe.s
+Index: musl-1.1.19/src/unistd/mips/pipe.s
+===================================================================
+--- musl-1.1.19.orig/src/unistd/mips/pipe.s
++++ musl-1.1.19/src/unistd/mips/pipe.s
 @@ -11,6 +11,9 @@ pipe:
  	beq $7, $0, 1f
  	nop
@@ -246,6 +246,18 @@ index ba2c39a..ed10f9a 100644
  	jr $25
  	subu $4, $0, $2
  1:	sw $2, 0($4)
--- 
-2.5.0
-
+Index: musl-1.1.19/Makefile
+===================================================================
+--- musl-1.1.19.orig/Makefile
++++ musl-1.1.19/Makefile
+@@ -142,6 +142,10 @@ else
+ 	AS_CMD = $(CC_CMD)
+ endif
+ 
++ifeq ($(ARCH),mips)
++	AS_CMD = $(CC) $(CFLAGS_ALL) -x assembler-with-cpp -c -o $@ $<
++endif
++
+ obj/%.o: $(srcdir)/%.s
+ 	$(AS_CMD)
+ 
