@@ -1,12 +1,13 @@
-Index: musl-1.1.19/arch/mips/crt_arch.h
+Index: musl-1.1.19/Makefile
 ===================================================================
---- musl-1.1.19.orig/arch/mips/crt_arch.h
-+++ musl-1.1.19/arch/mips/crt_arch.h
-@@ -39,6 +39,7 @@ __asm__(
- ".type   " START ", @function\n"
- "_" START ":\n"
- "" START ":\n"
-+"	divu $ra,$0 \n"
- "	bal 1f \n"
- "	 move $fp, $0 \n"
- "	.gpword . \n"
+--- musl-1.1.19.orig/Makefile
++++ musl-1.1.19/Makefile
+@@ -139,7 +139,7 @@ CC_CMD = $(CC) $(CFLAGS_ALL) -c -o $@ $<
+ ifeq ($(ADD_CFI),yes)
+ 	AS_CMD = LC_ALL=C awk -f $(srcdir)/tools/add-cfi.common.awk -f $(srcdir)/tools/add-cfi.$(ARCH).awk $< | $(CC) $(CFLAGS_ALL) -x assembler -c -o $@ -
+ else
+-	AS_CMD = $(CC_CMD)
++	AS_CMD = $(CC) $(CFLAGS_ALL) -x assembler-with-cpp -c -o $@ $<
+ endif
+ 
+ obj/%.o: $(srcdir)/%.s
