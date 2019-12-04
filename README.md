@@ -2,9 +2,9 @@
 
 为 RTL8196C 适配的 OpenWrt
 
-代码基于 [lede-rtl8196c](https://github.com/hackpascal/lede-rtl8196c) 修改，修复了其不能支持 musl 的错误（其实就是加了个编译选项...）
+代码基于 [hackpascal/lede-rtl8196c](https://github.com/hackpascal/lede-rtl8196c) 修改，修复了其不能支持 musl 的错误（其实就是加了个编译选项...）
 <br>
-并且参考了 [linux-rlx](https://github.com/rlx-router/linux-rlx)
+并且参考了 [nekromant/linux-rlx-upstream](https://github.com/rlx-router/linux-rlx-upstream) [rlx-router/linux-rlx](https://github.com/rlx-router/linux-rlx)
 <br>
 适配了 binutils-2.30, gcc-7.3, linux_kernel-4.14.53
 <br>
