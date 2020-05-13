@@ -14,7 +14,7 @@ define Build/loader-common
 	$(MAKE) -C lzma-loader \
 		PKG_BUILD_DIR="$@.src" \
 		TARGET_DIR="$(dir $@)" LOADER_NAME="$(notdir $@)" \
-		BOARD="$(BOARDNAME)" \
+		BOARD="$(BOARDNAME)" CPU_TYPE=$(CPU_TYPE) \
 		LZMA_TEXT_START=$(CVIMG_LOADER_START_ADDR) LOADADDR=0x80000000 \
 		$(1) compile loader.$(LOADER_TYPE)
 	mv "$@.$(LOADER_TYPE)" "$@"
@@ -120,13 +120,8 @@ define Device/Default
   IMAGE/sysupgrade.bin = append-kernel | append-fake-rootfs | append-rootfs | cvimg-fw | pad-rootfs
 endef
 
-define Device/au-home-spot-cube
-  DEVICE_TITLE := AU HOME SPOT CUBE
-  BOARDNAME := AU-HOME-SPOT-CUBE
-  CVIMG_KERNEL_BURN_ADDR := 0x9e000
-  CONSOLE = ttyS0,38400
-  MTDPARTS := spi0.0:32k(bootloader)ro,-@0x9e000(firmware)
-endef
-TARGET_DEVICES += au-home-spot-cube
+ifeq ($(SUBTARGET),rtl8196c)
+include ./rtl8196c.mk
+endif
 
 $(eval $(call BuildImage))

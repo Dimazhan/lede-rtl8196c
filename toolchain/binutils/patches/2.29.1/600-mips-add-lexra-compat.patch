@@ -6,7 +6,7 @@ Index: binutils-2.29.1/bfd/bfd-in2.h
  #define bfd_mach_mipsisa64r5           68
  #define bfd_mach_mipsisa64r6           69
  #define bfd_mach_mips_micromips        96
-+#define bfd_mach_mips_lexra            4180
++#define bfd_mach_mips_lx4180            4180
    bfd_arch_i386,      /* Intel 386 */
  #define bfd_mach_i386_intel_syntax     (1 << 0)
  #define bfd_mach_i386_i8086            (1 << 1)
@@ -20,7 +20,7 @@ Index: binutils-2.29.1/bfd/cpu-mips.c
    I_interaptiv_mr2,
 -  I_micromips
 +  I_micromips,
-+  I_lexra,
++  I_lx4180,
  };
  
  #define NN(index) (&arch_info_struct[(index) + 1])
@@ -30,7 +30,7 @@ Index: binutils-2.29.1/bfd/cpu-mips.c
       NN(I_interaptiv_mr2)),
 -  N (64, 64, bfd_mach_mips_micromips,"mips:micromips",FALSE,0)
 +  N (64, 64, bfd_mach_mips_micromips, "mips:micromips", FALSE, NN(I_micromips)),
-+  N (32, 32, bfd_mach_mips_lexra, "mips:lexra",   FALSE, 0)
++  N (32, 32, bfd_mach_mips_lx4180, "mips:lx4180",   FALSE, 0)
  };
  
  /* The default architecture is mips:3000, but with a machine number of
@@ -148,7 +148,7 @@ Index: binutils-2.29.1/gas/config/tc-mips.c
    { "p6600",	      0, ASE_VIRT | ASE_MSA,	ISA_MIPS64R6, CPU_MIPS64R6},
  
 +  /* Lexra processors */
-+  { "lexra",	      0, 0,			ISA_MIPS1,    CPU_LEXRA },
++  { "lx4180",	      0, 0,			ISA_MIPS1,    CPU_LX4180 },
 +
    /* End marker */
    { NULL, 0, 0, 0, 0 }
@@ -174,7 +174,7 @@ Index: binutils-2.29.1/include/opcode/mips.h
  #define INSN_INTERAPTIV_MR2	  0x04000000
  
 +/* Lexra instructions */
-+#define INSN_LEXRA                0x00000040
++#define INSN_4180                0x00000040
 +
  /* DSP ASE */
  #define ASE_DSP			0x00000001
@@ -183,7 +183,7 @@ Index: binutils-2.29.1/include/opcode/mips.h
  #define CPU_OCTEON3	6503
  #define CPU_XLR     	887682   	/* decimal 'XLR'   */
  #define CPU_INTERAPTIV_MR2 736550	/* decimal 'IA2'  */
-+#define CPU_LEXRA  4180    /*  LX4180 */
++#define CPU_LX4180      4180    /*  LX4180 */
  
  /* Return true if the given CPU is included in INSN_* mask MASK.  */
  
@@ -191,8 +191,8 @@ Index: binutils-2.29.1/include/opcode/mips.h
      case CPU_INTERAPTIV_MR2:
        return (mask & INSN_INTERAPTIV_MR2) != 0;
  
-+    case CPU_LEXRA:
-+      return (mask & INSN_LEXRA) != 0;
++    case CPU_LX4180:
++      return (mask & INSN_4180) != 0;
 +
      case CPU_MIPS32R6:
        return (mask & INSN_ISA_MASK) == INSN_ISA32R6;
@@ -205,7 +205,7 @@ Index: binutils-2.29.1/opcodes/mips16-opc.c
  #define E2	ASE_MIPS16E2
  #define E2MT	ASE_MIPS16E2_MT
  
-+#define LX	INSN_LEXRA
++#define RLX1	INSN_4180
 +
  const struct mips_opcode mips16_opcodes[] =
  {
@@ -214,20 +214,20 @@ Index: binutils-2.29.1/opcodes/mips16-opc.c
  {"lwl",	    "x,9(r)",	0xf00090e0, 0xfe18f8e0,	WR_1|RD_3,		0,		0,	E2,	0 },
  {"lwr",	    "x,9(r)",	0xf01090e0, 0xfe18f8e0,	WR_1|RD_3,		0,		0,	E2,	0 },
  {"lwu",     "y,W(x)",	0xb800, 0xf800,		WR_1|RD_3, 		0,		I3,	0,	0 },
-+{"madh",    "x,y", 0xf800, 0xf81f,   RD_1|RD_2|WR_HI|WR_LO,  0,    LX, 0,  0 },
-+{"madl",    "x,y", 0xf802, 0xf81f,   RD_1|RD_2|WR_HI|WR_LO,  0,    LX, 0,  0 },
-+{"mazh",    "x,y", 0xf804, 0xf81f,   RD_1|RD_2|WR_HI|WR_LO,  0,    LX, 0,  0 },
-+{"mazl",    "x,y", 0xf806, 0xf81f,   RD_1|RD_2|WR_HI|WR_LO,  0,    LX, 0,  0 },
++{"madh",    "x,y", 0xf800, 0xf81f,   RD_1|RD_2|WR_HI|WR_LO,  0,    RLX1, 0,  0 },
++{"madl",    "x,y", 0xf802, 0xf81f,   RD_1|RD_2|WR_HI|WR_LO,  0,    RLX1, 0,  0 },
++{"mazh",    "x,y", 0xf804, 0xf81f,   RD_1|RD_2|WR_HI|WR_LO,  0,    RLX1, 0,  0 },
++{"mazl",    "x,y", 0xf806, 0xf81f,   RD_1|RD_2|WR_HI|WR_LO,  0,    RLX1, 0,  0 },
  {"mfc0",    "y,N",	0xf0006700, 0xffffff00,	WR_1|RD_C0,		0,		0,	E2,	0 },
  {"mfc0",    "y,N,O",	0xf0006700, 0xff1fff00,	WR_1|RD_C0,		0,		0,	E2,	0 },
  {"mfhi",    "x",	0xe810, 0xf8ff,		WR_1|RD_HI,		SH,		I1,	0,	0 },
  {"mflo",    "x",	0xe812, 0xf8ff,		WR_1|RD_LO,		SH,		I1,	0,	0 },
  {"move",    "y,X",	0x6700, 0xff00,		WR_1|RD_2,		SH,		I1,	0,	0 },
  {"move",    "Y,Z",	0x6500, 0xff00,		WR_1|RD_2,		SH,		I1,	0,	0 },
-+{"msbh",    "x,y", 0xf810, 0xf81f,   RD_1|RD_2|WR_HI|WR_LO,  0,    LX, 0,  0 },
-+{"msbl",    "x,y", 0xf812, 0xf81f,   RD_1|RD_2|WR_HI|WR_LO,  0,    LX, 0,  0 },
-+{"mszh",    "x,y", 0xf814, 0xf81f,   RD_1|RD_2|WR_HI|WR_LO,  0,    LX, 0,  0 },
-+{"mszl",    "x,y", 0xf816, 0xf81f,   RD_1|RD_2|WR_HI|WR_LO,  0,    LX, 0,  0 },
++{"msbh",    "x,y", 0xf810, 0xf81f,   RD_1|RD_2|WR_HI|WR_LO,  0,    RLX1, 0,  0 },
++{"msbl",    "x,y", 0xf812, 0xf81f,   RD_1|RD_2|WR_HI|WR_LO,  0,    RLX1, 0,  0 },
++{"mszh",    "x,y", 0xf814, 0xf81f,   RD_1|RD_2|WR_HI|WR_LO,  0,    RLX1, 0,  0 },
++{"mszl",    "x,y", 0xf816, 0xf81f,   RD_1|RD_2|WR_HI|WR_LO,  0,    RLX1, 0,  0 },
  {"movn",    "x,.,w",	0xf000300a, 0xfffff81f,	WR_1|RD_2|RD_3,		0,		0,	E2,	0 },
  {"movn",    "x,r,w",	0xf020300a, 0xfff8f81f,	WR_1|RD_2|RD_3,		0,		0,	E2,	0 },
  {"movtn",   "x,.",	0xf000301a, 0xfffff8ff,	WR_1|RD_2|RD_T,		0,		0,	E2,	0 },
@@ -256,7 +256,7 @@ Index: binutils-2.29.1/opcodes/mips-dis.c
      mips_cp1_names_mips3264, mips_hwr_names_numeric },
  
 +  /* Lexra processors */
-+  { "lexra",	1, bfd_mach_mips_lexra, CPU_LEXRA, ISA_MIPS1, 0,
++  { "lx4180",	1, bfd_mach_mips_lx4180, CPU_LX4180, ISA_MIPS1, 0,
 +    mips_cp0_names_numeric, NULL, 0, mips_hwr_names_numeric},
 +
    /* This entry, mips16, is here only for ISA/processor selection; do
@@ -289,7 +289,7 @@ Index: binutils-2.29.1/opcodes/mips-opc.c
  #define IOCT3	INSN_OCTEON3
  #define XLR     INSN_XLR
  #define IAMR2	INSN_INTERAPTIV_MR2
-+#define LX      INSN_LEXRA
++#define RLX0      INSN_4180
  #define IVIRT	ASE_VIRT
  #define IVIRT64	ASE_VIRT64
  
@@ -298,7 +298,7 @@ Index: binutils-2.29.1/opcodes/mips-opc.c
  {"dctr",		"o(b)",	 	0xbc050000, 0xfc1f0000, RD_2,			0,		I3,		0,	0 },
  {"dctw",		"o(b)",		0xbc090000, 0xfc1f0000, RD_2,			0,		I3,		0,	0 },
 -{"deret",		"",		0x4200001f, 0xffffffff, NODS, 			0,		I32|G2,		0,	0 },
-+{"deret",		"",		0x4200001f, 0xffffffff, NODS, 			0,		I32|G2|LX,	0,	0 },
++{"deret",		"",		0x4200001f, 0xffffffff, NODS, 			0,		I32|G2|RLX0,	0,	0 },
  {"dext",		"t,r,+A,+H",	0x7c000003, 0xfc00003f, WR_1|RD_2,    		0,		I65,		0,	0 },
  {"dext",		"t,r,+A,+G",	0x7c000001, 0xfc00003f, WR_1|RD_2,    		0,		I65,		0,	0 }, /* dextm */
  {"dext",		"t,r,+E,+H",	0x7c000002, 0xfc00003f, WR_1|RD_2,    		0,		I65,		0,	0 }, /* dextu */
@@ -308,8 +308,8 @@ Index: binutils-2.29.1/opcodes/mips-opc.c
  {"maccus",		"d,s,t",	0x00000468, 0xfc0007ff,	WR_1|RD_2|RD_3|WR_HILO,	     0,		N412,		0,	0 },
 -{"mad",			"s,t",		0x70000000, 0xfc00ffff, RD_1|RD_2|MOD_HILO,	     0,		P3,		0,	0 },
 -{"madu",		"s,t",		0x70000001, 0xfc00ffff, RD_1|RD_2|MOD_HILO,	     0,		P3,		0,	0 },
-+{"mad",			"s,t",		0x70000000, 0xfc00ffff, RD_1|RD_2|MOD_HILO,	     0,		P3|LX,		0,	0 },
-+{"madu",		"s,t",		0x70000001, 0xfc00ffff, RD_1|RD_2|MOD_HILO,	     0,		P3|LX,		0,	0 },
++{"mad",			"s,t",		0x70000000, 0xfc00ffff, RD_1|RD_2|MOD_HILO,	     0,		P3|RLX0,		0,	0 },
++{"madu",		"s,t",		0x70000001, 0xfc00ffff, RD_1|RD_2|MOD_HILO,	     0,		P3|RLX0,		0,	0 },
  {"madd.d",		"D,R,S,T",	0x4c000021, 0xfc00003f, WR_1|RD_2|RD_3|RD_4|FP_D,    0,		I4_33,		0,	I37 },
  {"madd.d",		"D,S,T",	0x46200018, 0xffe0003f,	WR_1|RD_2|RD_3|FP_D,	     0,		IL2E,		0,	0 },
  {"madd.d",		"D,S,T",	0x72200018, 0xffe0003f,	WR_1|RD_2|RD_3|FP_D,	     0,		IL2F,		0,	0 },
@@ -318,12 +318,12 @@ Index: binutils-2.29.1/opcodes/mips-opc.c
  {"msub.ps",		"D,S,T",	0x72c00019, 0xffe0003f,	WR_1|RD_2|RD_3|FP_D,	0,		IL2F,		0,	0 },
  {"msub",		"s,t",		0x0000001e, 0xfc00ffff, RD_1|RD_2|WR_HILO,	0,		L1,		0,	0 },
 -{"msub",		"s,t",		0x70000004, 0xfc00ffff, RD_1|RD_2|MOD_HILO,     0,		I32|N55,	0,	I37 },
-+{"msub",		"s,t",		0x70000004, 0xfc00ffff, RD_1|RD_2|MOD_HILO,     0,		I32|N55|LX,	0,	I37 },
++{"msub",		"s,t",		0x70000004, 0xfc00ffff, RD_1|RD_2|MOD_HILO,     0,		I32|N55|RLX0,	0,	I37 },
  {"msub",		"7,s,t",	0x70000004, 0xfc00e7ff, RD_2|RD_3|MOD_a,        0,              0,		D32,	0 },
  {"msuba.s",		"S,T",		0x4600001f, 0xffe007ff,	RD_1|RD_2|FP_S,		0,		EE,		0,	0 },
  {"msubu",		"s,t",		0x0000001f, 0xfc00ffff, RD_1|RD_2|WR_HILO,	0,		L1,		0,	0 },
 -{"msubu",		"s,t",		0x70000005, 0xfc00ffff, RD_1|RD_2|MOD_HILO,     0,		I32|N55,	0,	I37 },
-+{"msubu",		"s,t",		0x70000005, 0xfc00ffff, RD_1|RD_2|MOD_HILO,     0,		I32|N55|LX,	0,	I37 },
++{"msubu",		"s,t",		0x70000005, 0xfc00ffff, RD_1|RD_2|MOD_HILO,     0,		I32|N55|RLX0,	0,	I37 },
  {"msubu",		"7,s,t",	0x70000005, 0xfc00e7ff, RD_2|RD_3|MOD_a,        0,              0,		D32,	0 },
  {"mtbpc",		"t",		0x4080c000, 0xffe0ffff,	RD_1|WR_C0|CM,		0,		EE,		0,	0 },
  {"mtdab",		"t",		0x4080c004, 0xffe0ffff,	RD_1|WR_C0|CM,		0,		EE,		0,	0 },
@@ -332,10 +332,10 @@ Index: binutils-2.29.1/opcodes/mips-opc.c
  {"sdbbp",		"c,q",		0x0000000e, 0xfc00003f,	TRAP,			0,		G2,		0,	0 },
  {"sdbbp",		"",		0x0000000e, 0xffffffff, TRAP,           	0,		I37,		0,	0 },
 -{"sdbbp",		"",		0x7000003f, 0xffffffff, TRAP,           	0,		I32,		0,	I37 },
-+{"sdbbp",		"",		0x7000003f, 0xffffffff, TRAP,           	0,		I32|LX,		0,	I37 },
++{"sdbbp",		"",		0x7000003f, 0xffffffff, TRAP,           	0,		I32|RLX0,		0,	I37 },
  {"sdbbp",		"B",		0x0000000e, 0xfc00003f, TRAP,           	0,		I37,		0,	0 },
 -{"sdbbp",		"B",		0x7000003f, 0xfc00003f, TRAP,           	0,		I32,		0,	I37 },
-+{"sdbbp",		"B",		0x7000003f, 0xfc00003f, TRAP,           	0,		I32|LX,		0,	I37 },
++{"sdbbp",		"B",		0x7000003f, 0xfc00003f, TRAP,           	0,		I32|RLX0,		0,	I37 },
  {"sdc1",		"T,o(b)",	0xf4000000, 0xfc000000, RD_1|RD_3|SM|FP_D,	0,		I2,		0,	SF },
  {"sdc1",		"E,o(b)",	0xf4000000, 0xfc000000, RD_1|RD_3|SM|FP_D,	0,		I2,		0,	SF },
  {"sdc1",		"T,A(b)",	0,    (int) M_SDC1_AB,	INSN_MACRO,		INSN2_M_FP_D,	I2,		0,	SF },
@@ -345,18 +345,18 @@ Index: binutils-2.29.1/opcodes/mips-opc.c
  {"rfe",			"",		0x42000010, 0xffffffff,	0,			0,		I1|T3,		0,	0 },
 +
 +/* Lexra Coprocessor 0 operations, actually lx4180 does not support them */
-+{"mflxc0",		"t,l",		0x40600000, 0xffe007ff, WR_1|RD_C0|LC,		0,		LX,		0,	0 },
-+{"mtlxc0",		"t,l",		0x40e00000, 0xffe007ff, RD_1|WR_C0|CM,		0,		LX,		0,	0 },
++{"mflxc0",		"t,l",		0x40600000, 0xffe007ff, WR_1|RD_C0|LC,		0,		RLX0,		0,	0 },
++{"mtlxc0",		"t,l",		0x40e00000, 0xffe007ff, RD_1|WR_C0|CM,		0,		RLX0,		0,	0 },
 +/* MAC-DIV */
-+{"sleep",		"",		0x42000038, 0xffffffff, 0,			0,		LX,		0,	0 },
-+{"madh",		"s,t",		0xf0000000, 0xfc00ffff, RD_1|RD_2,		0,		LX,		0,	0 },
-+{"madl",		"s,t",		0xf0000002, 0xfc00ffff, RD_1|RD_2,		0,		LX,		0,	0 },
-+{"mazh",		"s,t",		0xf0000004, 0xfc00ffff, RD_1|RD_2,		0,		LX,		0,	0 },
-+{"mazl",		"s,t",		0xf0000006, 0xfc00ffff, RD_1|RD_2,		0,		LX,		0,	0 },
-+{"msbh",		"s,t",		0xf0000010, 0xfc00ffff, RD_1|RD_2,		0,		LX,		0,	0 },
-+{"msbl",		"s,t",		0xf0000012, 0xfc00ffff, RD_1|RD_2,		0,		LX,		0,	0 },
-+{"mszh",		"s,t",		0xf0000014, 0xfc00ffff, RD_1|RD_2,		0,		LX,		0,	0 },
-+{"mszl",		"s,t",		0xf0000016, 0xfc00ffff, RD_1|RD_2,		0,		LX,		0,	0 },
++{"sleep",		"",		0x42000038, 0xffffffff, 0,			0,		RLX0,		0,	0 },
++{"madh",		"s,t",		0xf0000000, 0xfc00ffff, RD_1|RD_2,		0,		RLX0,		0,	0 },
++{"madl",		"s,t",		0xf0000002, 0xfc00ffff, RD_1|RD_2,		0,		RLX0,		0,	0 },
++{"mazh",		"s,t",		0xf0000004, 0xfc00ffff, RD_1|RD_2,		0,		RLX0,		0,	0 },
++{"mazl",		"s,t",		0xf0000006, 0xfc00ffff, RD_1|RD_2,		0,		RLX0,		0,	0 },
++{"msbh",		"s,t",		0xf0000010, 0xfc00ffff, RD_1|RD_2,		0,		RLX0,		0,	0 },
++{"msbl",		"s,t",		0xf0000012, 0xfc00ffff, RD_1|RD_2,		0,		RLX0,		0,	0 },
++{"mszh",		"s,t",		0xf0000014, 0xfc00ffff, RD_1|RD_2,		0,		RLX0,		0,	0 },
++{"mszl",		"s,t",		0xf0000016, 0xfc00ffff, RD_1|RD_2,		0,		RLX0,		0,	0 },
  };
  
  #define MIPS_NUM_OPCODES \

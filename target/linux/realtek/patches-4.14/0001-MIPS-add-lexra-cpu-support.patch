@@ -129,7 +129,7 @@ Index: linux-4.14.13/arch/mips/Makefile
  # CPU-dependent compiler/assembler options for optimization.
  #
  cflags-$(CONFIG_CPU_R3000)	+= -march=r3000
-+cflags-$(CONFIG_CPU_LEXRA)	+= -march=lexra -mno-llsc
++cflags-$(CONFIG_CPU_LX4180)	+= -march=lx4180 -mno-llsc
  cflags-$(CONFIG_CPU_TX39XX)	+= -march=r3900
  cflags-$(CONFIG_CPU_R4300)	+= -march=r4300 -Wa,--trap
  cflags-$(CONFIG_CPU_VR41XX)	+= -march=r4100 -Wa,--trap

@@ -52,17 +52,18 @@ Index: gcc-7.3.0/gcc/config/mips/mips-cpus.def
  MIPS_CPU ("i6400", PROCESSOR_I6400, 69, 0)
 +
 +/* Lexra processors */
-+MIPS_CPU ("lexra", PROCESSOR_LEXRA, 1, 0)
++MIPS_CPU ("lx4180", PROCESSOR_LX4180, 1, 0)
 +
 Index: gcc-7.3.0/gcc/config/mips/mips.h
 ===================================================================
 --- gcc-7.3.0.orig/gcc/config/mips/mips.h
 +++ gcc-7.3.0/gcc/config/mips/mips.h
-@@ -286,6 +286,7 @@ struct mips_cpu_info {
+@@ -286,6 +286,8 @@ struct mips_cpu_info {
  				     || mips_arch == PROCESSOR_SB1A)
  #define TARGET_SR71K                (mips_arch == PROCESSOR_SR71000)
  #define TARGET_XLP                  (mips_arch == PROCESSOR_XLP)
-+#define TARGET_LEXRA		    (mips_arch == PROCESSOR_LEXRA)
++#define TARGET_LX4180		    (mips_arch == PROCESSOR_LX4180)
++#define TARGET_LEXRA		    (TARGET_LX4180)
  
  /* Scheduling target defines.  */
  #define TUNE_20KC		    (mips_tune == PROCESSOR_20KC)
@@ -75,18 +76,22 @@ Index: gcc-7.3.0/gcc/config/mips/mips.h
  #define TUNE_MIPS3900               (mips_tune == PROCESSOR_R3900)
  #define TUNE_MIPS4000               (mips_tune == PROCESSOR_R4000)
  #define TUNE_MIPS4120               (mips_tune == PROCESSOR_R4120)
-@@ -316,6 +317,7 @@ struct mips_cpu_info {
+@@ -316,6 +317,8 @@ struct mips_cpu_info {
  #define TUNE_SB1                    (mips_tune == PROCESSOR_SB1		\
  				     || mips_tune == PROCESSOR_SB1A)
  #define TUNE_P5600                  (mips_tune == PROCESSOR_P5600)
-+#define TUNE_LEXRA                  (mips_tune == PROCESSOR_LEXRA)
++#define TUNE_LX4180                 (mips_tune == PROCESSOR_LX4180)
++#define TUNE_LEXRA                  (TUNE_LX4180)
  #define TUNE_I6400                  (mips_tune == PROCESSOR_I6400)
  
  /* Whether vector modes and intrinsics for ST Microelectronics
-@@ -637,6 +639,13 @@ struct mips_cpu_info {
+@@ -637,6 +639,16 @@ struct mips_cpu_info {
  									\
        if (TARGET_CACHE_BUILTIN)						\
  	builtin_define ("__GCC_HAVE_BUILTIN_MIPS_CACHE");		\
++                 \
++      if (TARGET_LX4180)              \
++  builtin_define ("__m4180");          \
 +                 \
 +      if (TARGET_LEXRA)              \
 +  builtin_define ("__mlexra");          \
@@ -102,7 +107,7 @@ Index: gcc-7.3.0/gcc/config/mips/mips.h
       march=vr41*|march=m4k|march=4k*|march=24kc|march=24kec \
       |march=34kc|march=34kn|march=74kc|march=1004kc|march=5kc \
 -     |march=m14k*|march=m5101|march=octeon|march=xlr: -msoft-float; \
-+     |march=m14k*|march=m5101|march=octeon|march=xlr|march=lexra: -msoft-float; \
++     |march=m14k*|march=m5101|march=octeon|march=xlr|march=lx4180: -msoft-float; \
       march=*: -mhard-float}"
  
  /* A spec condition that matches 32-bit options.  It only works if
@@ -120,7 +125,7 @@ Index: gcc-7.3.0/gcc/config/mips/mips.h
  
  #undef CC1_SPEC
  #define CC1_SPEC "\
-+%{mlexra:-march=lexra} \
++%{mlx4180:-march=lx4180} \
  %{G*} %{EB:-meb} %{EL:-mel} %{EB:%{EL:%emay not use both -EB and -EL}} \
  %(subtarget_cc1_spec)"
  
@@ -132,7 +137,7 @@ Index: gcc-7.3.0/gcc/config/mips/mips.md
    xlr
    xlp
    p5600
-+  lexra
++  lx4180
    m5100
    i6400
  ])
@@ -213,5 +218,5 @@ Index: gcc-7.3.0/gcc/config/mips/mips-tables.opt
  Enum(mips_arch_opt_value) String(i6400) Value(102) Canonical
  
 +EnumValue
-+Enum(mips_arch_opt_value) String(lexra) Value(103) Canonical
++Enum(mips_arch_opt_value) String(lx4180) Value(103) Canonical
 +

@@ -15,6 +15,7 @@ LOADER_NAME	:= $(basename $(notdir $(LOADER)))
 LOADER_DATA 	:=
 TARGET_DIR	:=
 BOARD		:=
+CPU_TYPE	:=
 
 ifeq ($(TARGET_DIR),)
 TARGET_DIR	:= $(KDIR)
@@ -40,6 +41,7 @@ loader-compile: $(PKG_BUILD_DIR)/.prepared
 		LOADADDR=$(LOADADDR) \
 		LOADER_DATA=$(LOADER_DATA) \
 		BOARD="$(BOARD)" \
+		CPU_TYPE=$(CPU_TYPE) \
 		clean all
 
 loader.gz: $(PKG_BUILD_DIR)/loader.bin

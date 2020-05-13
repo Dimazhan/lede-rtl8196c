@@ -19,6 +19,7 @@ LOADADDR	:=
 LZMA_TEXT_START	:= 0x80500000
 LOADER_DATA	:=
 BOARD		:=
+CPU_TYPE	:=
 
 CC		:= $(CROSS_COMPILE)gcc
 LD		:= $(CROSS_COMPILE)ld
@@ -32,8 +33,8 @@ CFLAGS		= -D__KERNEL__ -Wall -Wstrict-prototypes -Wno-trigraphs -Os \
 		  -fno-strict-aliasing -fno-common -fomit-frame-pointer -G 0 \
 		  -mno-abicalls -fno-pic -ffunction-sections -pipe -mlong-calls \
 		  -fno-common -ffreestanding -fhonour-copts \
-		  -mabi=32 -march=lexra -mno-llsc \
-		  -Wa,-32 -Wa,-march=lexra
+		  -mabi=32 -march=$(CPU_TYPE) -mno-llsc \
+		  -Wa,-32 -Wa,-march=$(CPU_TYPE)
 CFLAGS		+= -D_LZMA_PROB32
 
 ASFLAGS		= $(CFLAGS) -D__ASSEMBLY__
