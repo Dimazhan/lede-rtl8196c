@@ -5,6 +5,12 @@ menu "Realtek RLX based machine selection"
 config REALTEK_MACH_GENERIC
 	bool "Generic Realtek RLX based board"
 
+config REALTEK_MACH_A3002RU
+	bool "TOTOLINK A3002RU board"
+	help
+	  Say 'Y' here if you want to support the
+	  TOTOLINK A3002RU board.
+
 config REALTEK_MACH_AU_HOME_SPOT_CUBE
 	bool "AU HOME SPOT CUBE board"
 	help

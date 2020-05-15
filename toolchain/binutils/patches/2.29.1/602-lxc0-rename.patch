@@ -1,0 +1,187 @@
+diff --git a/gas/config/tc-mips.c b/gas/config/tc-mips.c
+index 4615aac..3e367ff 100644
+--- a/gas/config/tc-mips.c
++++ b/gas/config/tc-mips.c
+@@ -5006,7 +5006,7 @@ convert_reg_type (const struct mips_opcode *opcode,
+     case OP_REG_MSA_CTRL:
+       return RTYPE_NUM;
+ 
+-    case OP_REG_LXC0:
++    case OP_REG_LX_DST_REG_4:
+       return RTYPE_NUM | RTYPE_CP0;
+     }
+   abort ();
+@@ -5053,7 +5053,7 @@ check_regno (struct mips_arg_info *arg,
+ 		 name, regno);
+     }
+ 
+-  if (type == OP_REG_LXC0)
++  if (type == OP_REG_LX_DST_REG_4)
+     {
+       if (regno > 31)
+         as_bad (_("lxc0 register should be smaller than 32 for %s, was %d"),
+diff --git a/include/opcode/mips.h b/include/opcode/mips.h
+index 0db00d7..901cce0 100644
+--- a/include/opcode/mips.h
++++ b/include/opcode/mips.h
+@@ -484,7 +484,7 @@ enum mips_reg_operand_type {
+   OP_REG_MSA_CTRL,
+ 
+   /* Lexra lxc0 registers */
+-  OP_REG_LXC0
++  OP_REG_LX_DST_REG_4
+ };
+ 
+ /* Base class for all operands.  */
+diff --git a/opcodes/mips-dis.c b/opcodes/mips-dis.c
+index 91a136f..4c60457 100644
+--- a/opcodes/mips-dis.c
++++ b/opcodes/mips-dis.c
+@@ -1183,7 +1183,7 @@ print_reg (struct disassemble_info *info, const struct mips_opcode *opcode,
+       info->fprintf_func (info->stream, "%s", msa_control_names[regno]);
+       break;
+ 
+-    case OP_REG_LXC0:
++    case OP_REG_LX_DST_REG_4:
+       info->fprintf_func (info->stream, "%s", mips_cplxc0_names_alias[regno]);
+       break;
+ 
+diff --git a/opcodes/mips-opc.c b/opcodes/mips-opc.c
+index bcbe9fb..bd63177 100644
+--- a/opcodes/mips-opc.c
++++ b/opcodes/mips-opc.c
+@@ -199,7 +199,7 @@ decode_mips_operand (const char *p)
+     case 'i': HINT (16, 0);
+     case 'j': SINT (16, 0);
+     case 'k': HINT (5, 16);
+-    case 'l': REG (5, 11, LXC0);
++    case 'l': REG (5, 11, LX_DST_REG_4);
+     case 'o': SINT (16, 0);
+     case 'p': BRANCH (16, 0, 2);
+     case 'q': HINT (10, 6);
+@@ -332,6 +332,7 @@ decode_mips_operand (const char *p)
+ #define RLX0      INSN_4180
+ #define RLX3      INSN_5281
+ #define RLXA      (RLX0 | RLX3)
++#define RLXB      (RLX3)
+ #define IVIRT	ASE_VIRT
+ #define IVIRT64	ASE_VIRT64
+ 
+@@ -3367,8 +3368,8 @@ const struct mips_opcode mips_builtin_opcodes[] =
+ {"rfe",			"",		0x42000010, 0xffffffff,	0,			0,		I1|T3,		0,	0 },
+ 
+ /* Lexra Coprocessor 0 operations, actually lx4180 does not support them */
+-{"mflxc0",		"t,l",		0x40600000, 0xffe007ff, WR_1|RD_C0|LC,		0,		RLXA,		0,	0 },
+-{"mtlxc0",		"t,l",		0x40e00000, 0xffe007ff, RD_1|WR_C0|CM,		0,		RLXA,		0,	0 },
++{"mflxc0",		"t,l",		0x40600000, 0xffe007ff, WR_1|RD_C0|LC,		0,		RLXB,		0,	0 },
++{"mtlxc0",		"t,l",		0x40e00000, 0xffe007ff, RD_1|WR_C0|CM,		0,		RLXB,		0,	0 },
+ /* MAC-DIV */
+ {"sleep",		"",		0x42000038, 0xffffffff, 0,			0,		RLXA,		0,	0 },
+ {"madh",		"s,t",		0xf0000000, 0xfc00ffff, RD_1|RD_2,		0,		RLXA,		0,	0 },
+diff --git a/opcodes/mips-opc.c b/opcodes/mips-opc.c
+index bd63177..4e2727c 100644
+--- a/opcodes/mips-opc.c
++++ b/opcodes/mips-opc.c
+@@ -45,7 +45,16 @@ decode_mips_operand (const char *p)
+ 	{
+ 	case 'a': INT_ADJ (19, 0, 262143, 2, FALSE);
+ 	case 'b': INT_ADJ (18, 0, 131071, 3, FALSE);
+ 	case 'd': SPECIAL (0, 0, REPEAT_DEST_REG);
++	case 'l':
++	  switch (p[2])
++	  {
++	  case 'd':
++	    switch (p[3])
++		{
++		case '4': REG (5, 11, LX_DST_REG_4);
++		}
++	  }
+ 	case 'm': SPECIAL (20, 6, SAVE_RESTORE_LIST);
+ 	case 's': SPECIAL (5, 21, NON_ZERO_REG);
+ 	case 't': SPECIAL (5, 16, NON_ZERO_REG);
+@@ -199,7 +209,6 @@ decode_mips_operand (const char *p)
+     case 'i': HINT (16, 0);
+     case 'j': SINT (16, 0);
+     case 'k': HINT (5, 16);
+-    case 'l': REG (5, 11, LX_DST_REG_4);
+     case 'o': SINT (16, 0);
+     case 'p': BRANCH (16, 0, 2);
+     case 'q': HINT (10, 6);
+@@ -3368,8 +3377,8 @@ const struct mips_opcode mips_builtin_opcodes[] =
+ {"rfe",			"",		0x42000010, 0xffffffff,	0,			0,		I1|T3,		0,	0 },
+ 
+ /* Lexra Coprocessor 0 operations, actually lx4180 does not support them */
+-{"mflxc0",		"t,l",		0x40600000, 0xffe007ff, WR_1|RD_C0|LC,		0,		RLXB,		0,	0 },
+-{"mtlxc0",		"t,l",		0x40e00000, 0xffe007ff, RD_1|WR_C0|CM,		0,		RLXB,		0,	0 },
++{"mflxc0",		"t,-ld4",		0x40600000, 0xffe007ff, WR_1|RD_C0|LC,		0,		RLXB,		0,	0 },
++{"mtlxc0",		"t,-ld4",		0x40e00000, 0xffe007ff, RD_1|WR_C0|CM,		0,		RLXB,		0,	0 },
+ /* MAC-DIV */
+ {"sleep",		"",		0x42000038, 0xffffffff, 0,			0,		RLXA,		0,	0 },
+ {"madh",		"s,t",		0xf0000000, 0xfc00ffff, RD_1|RD_2,		0,		RLXA,		0,	0 },
+diff --git a/gas/config/tc-mips.c b/gas/config/tc-mips.c
+index 3e367ff..e649787 100644
+--- a/gas/config/tc-mips.c
++++ b/gas/config/tc-mips.c
+@@ -3498,6 +3498,15 @@ validate_mips_insn (const struct mips_opcode *opcode,
+ 	/* Skip prefix characters.  */
+ 	if (decode_operand && (*s == '+' || *s == 'm' || *s == '-'))
+ 	  ++s;
++
++	if (decode_operand && *s == 'l')
++      {
++      if (s[1] == 'd' || s[1] == 's' || s[1] == 't')
++        s += 2;
++      else if (s[1] != '+' && s[1] != '-')
++        s++;
++      }
++
+ 	opno += 1;
+ 	break;
+       }
+diff --git a/gas/config/tc-mips.c b/gas/config/tc-mips.c
+index e649787..d7b544a 100644
+--- a/gas/config/tc-mips.c
++++ b/gas/config/tc-mips.c
+@@ -3499,7 +3499,7 @@ validate_mips_insn (const struct mips_opcode *opcode,
+ 	if (decode_operand && (*s == '+' || *s == 'm' || *s == '-'))
+ 	  ++s;
+ 
+-	if (decode_operand && *s == 'l')
++	if (decode_operand && s != opcode->args && *(s-1) == '-' && *s == 'l')
+       {
+       if (s[1] == 'd' || s[1] == 's' || s[1] == 't')
+         s += 2;
+diff --git a/gas/config/tc-mips.c b/gas/config/tc-mips.c
+index d7b544a..de16d17 100644
+--- a/gas/config/tc-mips.c
++++ b/gas/config/tc-mips.c
+@@ -8274,6 +8274,14 @@ match_insn (struct mips_cl_insn *insn, const struct mips_opcode *opcode,
+       if (*args == '+' || *args == 'm' || *args == '-')
+ 	args++;
+ 
++      if (args != opcode->args && *(args-1) == '-' && *args == 'l')
++        {
++        if (args[1] == 'd' || args[1] == 's' || args[1] == 't')
++          args += 2;
++        else if (args[1] != '+' && args[1] != '-')
++          args++;
++        }
++
+       if (mips_optional_operand_p (operand)
+ 	  && args[1] == ','
+ 	  && (arg.token[0].type != OT_REG
+@@ -8967,6 +8975,14 @@ macro_build (expressionS *ep, const char *name, const char *fmt, ...)
+ 
+ 	  if (*fmt == '+' || *fmt == 'm' || *fmt == '-')
+ 	    ++fmt;
++
++	  if (fmt != amo->args && *(fmt-1) == '-' && *fmt == 'l')
++        {
++        if (fmt[1] == 'd' || fmt[1] == 's' || fmt[1] == 't')
++          fmt += 2;
++        else if (fmt[1] != '+' && fmt[1] != '-')
++          fmt++;
++        }
+ 	  break;
+ 	}
+     }

@@ -12,13 +12,13 @@ BOARD:=realtek
 BOARDNAME:=Realtek RTL819X
 FEATURES:=squashfs
 MAINTAINER:=Weijie Gao <hackpascal@gmail.com>
-SUBTARGETS:=rtl8196c
+SUBTARGETS:=rtl8196c rtl819xd
 
 KERNEL_PATCHVER:=4.14
 
 include $(INCLUDE_DIR)/target.mk
 
-DEFAULT_PACKAGES += wpad-mini swconfig kmod-gpio-button-hotplug \
-	kmod-rtl8192ce kmod-rtl8192de kmod-rtl8192se
+DEFAULT_PACKAGES += swconfig kmod-gpio-button-hotplug
+	#wpad-mini kmod-rtl8192ce kmod-rtl8192de kmod-rtl8192se
 
 $(eval $(call BuildTarget))

@@ -1,0 +1,34 @@
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index c3bf07e..788b8ec 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -1589,10 +1589,13 @@ config CPU_R3000
+ 	  might be a safe bet.  If the resulting kernel does not work,
+ 	  try to recompile with R3000.
+ 
+-config CPU_LEXRA
+-	bool "Lexra"
+-	depends on SYS_HAS_CPU_R3000
+-	select CPU_SUPPORTS_32BIT_KERNEL
++config CPU_LX4180
++	bool "Lexra LX4180"
++	select CPU_LEXRA
++
++config CPU_RLX5281
++	bool "Lexra RLX5281"
++	select CPU_LEXRA
+ 
+ config CPU_TX39XX
+ 	bool "R39XX"
+@@ -1776,6 +1779,11 @@ config CPU_XLP
+ 	  Netlogic Microsystems XLP processors.
+ endchoice
+ 
++config CPU_LEXRA
++	bool
++	depends on SYS_HAS_CPU_R3000
++	select CPU_SUPPORTS_32BIT_KERNEL
++
+ config CPU_MIPS32_3_5_FEATURES
+ 	bool "MIPS32 Release 3.5 Features"
+ 	depends on SYS_HAS_CPU_MIPS32_R3_5

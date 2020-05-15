@@ -155,13 +155,134 @@ static void __init rtl8196c_pcie_reset(struct realtek_pcie_reset_controller *rpr
 	realtek_pcie_phy_reset(rprc);
 }
 
+static void __init rtl819xd_pcie_reset(struct realtek_pcie_reset_controller *rprc, int pcie_xtal_40mhz)
+{
+	u32 val;
+
+	/* Enable PCIe controller */
+	val = realtek_sys_read(REALTEK_SYS_REG_CLK_MANAGE);
+	if (rprc->rc_phy_reg == REALTEK_SYS_REG_PCIE0_PHY)
+		val |= RTL819XD_SYS_CLK_PCIE0_EN;
+	else
+		val |= RTL819XD_SYS_CLK_PCIE1_EN;
+	realtek_sys_write(REALTEK_SYS_REG_CLK_MANAGE, val);
+
+#if 0
+	/* Is it OK not to set this? */
+	__raw_writel((1 << REALTEK_PCIE_RC_EXT_DEV_NUM_SHIFT), rprc->rc_ext_base + REALTEK_PCIE_RC_EXT_REG_IP_CFG);
+#endif
+
+	/* Enable PCIe device */
+	if (rprc->rc_phy_reg == REALTEK_SYS_REG_PCIE0_PHY) {
+		val = realtek_sys_read(REALTEK_SYS_REG_CLK_MANAGE);
+		val &= ~RTL819XD_SYS_CLK_PCIE0_DEV_RST_L;
+		realtek_sys_write(REALTEK_SYS_REG_CLK_MANAGE, val);
+		val |= RTL819XD_SYS_CLK_PCIE0_DEV_RST_L;
+		realtek_sys_write(REALTEK_SYS_REG_CLK_MANAGE, val);
+	} else {
+		val = realtek_sys_read(REALTEK_SYS_REG_GPIO_MUX);
+		val |= 0x300;
+		realtek_sys_write(REALTEK_SYS_REG_GPIO_MUX, val);
+		val = realtek_sys_read(REALTEK_GPIO_EFGH_BASE); /* Port EFGH control */
+		val &= ~(0x1000);	/*port F bit 4 */
+		realtek_sys_write(REALTEK_GPIO_EFGH_BASE, val);
+		val = realtek_sys_read(REALTEK_GPIO_EFGH_BASE + 8); /* Port EFGH direction */
+		val |= (0x1000);	/*port F bit 4 */
+		realtek_sys_write(REALTEK_GPIO_EFGH_BASE + 8, val);
+		val = realtek_sys_read(REALTEK_GPIO_EFGH_BASE + 12); /* Port EFGH data */
+		val |= (0x1000);	//PERST=1
+		realtek_sys_write(REALTEK_GPIO_EFGH_BASE + 12, val);
+	}
+//#ifdef CONFIG_RTL_819XD
+	val = realtek_sys_read(REALTEK_SYS_REG_CLK_MANAGE);
+	val |= (1<<12)|(1<<13)|(1<<18);
+	realtek_sys_write(REALTEK_SYS_REG_CLK_MANAGE, val);
+//#endif
+
+	realtek_pcie_mdio_reset(rprc);
+
+//#if defined(CONFIG_RTL8198_REVISION_B) || defined(CONFIG_RTL_819XD)
+	val = realtek_sys_read(REALTEK_SYS_REG_REVISION);
+	if ((val >= RTL819XD_SYS_REV_RTL8198_REVISION_B) || ((val&0xfffff000) == RTL819XD_SYS_REV_RTL8197D))
+	{
+		realtek_pcie_mdio_write(rprc, 0x00, 0xD087);
+		realtek_pcie_mdio_write(rprc, 0x01, 0x0003);
+		realtek_pcie_mdio_write(rprc, 0x02, 0x4d18);
+
+		if (pcie_xtal_40mhz) {
+			realtek_pcie_mdio_write(rprc, 0x05, 0x0BCB);
+			realtek_pcie_mdio_write(rprc, 0x06, 0xF148);
+		} else {
+			realtek_pcie_mdio_write(rprc, 0x06, 0xf848);
+		}
+
+		realtek_pcie_mdio_write(rprc, 0x07, 0x31ff);
+		realtek_pcie_mdio_write(rprc, 0x08, 0x18d5);
+		realtek_pcie_mdio_write(rprc, 0x09, 0x539c);
+		realtek_pcie_mdio_write(rprc, 0x0a, 0x20eb);
+		realtek_pcie_mdio_write(rprc, 0x0d, 0x1766);
+//#ifdef CONFIG_RTL_819XD
+		realtek_pcie_mdio_write(rprc, 0x0b, 0x0711);
+/*#else
+		realtek_pcie_mdio_write(rprc, 0x0b, 0x0511);
+#endif*/
+		realtek_pcie_mdio_write(rprc, 0x0f, 0x0a00);
+		realtek_pcie_mdio_write(rprc, 0x19, 0xFCE0);
+		realtek_pcie_mdio_write(rprc, 0x1a, 0x7e4f);
+		realtek_pcie_mdio_write(rprc, 0x1b, 0xFC01);
+		realtek_pcie_mdio_write(rprc, 0x1e, 0xC280);
+	} else
+//#endif
+	{
+		realtek_pcie_mdio_write(rprc, 0x00, 0xD087);
+		realtek_pcie_mdio_write(rprc, 0x01, 0x0003);
+		realtek_pcie_mdio_write(rprc, 0x06, 0xf448);
+		realtek_pcie_mdio_write(rprc, 0x06, 0x408);
+		realtek_pcie_mdio_write(rprc, 0x07, 0x31ff);
+		realtek_pcie_mdio_write(rprc, 0x08, 0x18d5);
+		realtek_pcie_mdio_write(rprc, 0x09, 0x531c);
+		realtek_pcie_mdio_write(rprc, 0x0d, 0x1766);
+		realtek_pcie_mdio_write(rprc, 0x0f, 0x0010);
+		realtek_pcie_mdio_write(rprc, 0x19, 0xFCE0);
+		realtek_pcie_mdio_write(rprc, 0x1e, 0xC280);
+	}
+
+	/* Reset PCIe device */
+	if (rprc->rc_phy_reg == REALTEK_SYS_REG_PCIE0_PHY) {
+		val = realtek_sys_read(REALTEK_SYS_REG_CLK_MANAGE);
+		val &= ~RTL819XD_SYS_CLK_PCIE0_DEV_RST_L;
+		realtek_sys_write(REALTEK_SYS_REG_CLK_MANAGE, val);
+		mdelay(500);
+		mdelay(500);
+		val |= RTL819XD_SYS_CLK_PCIE0_DEV_RST_L;
+		realtek_sys_write(REALTEK_SYS_REG_CLK_MANAGE, val);
+	} else {
+		val = realtek_sys_read(REALTEK_GPIO_EFGH_BASE + 12); /* Port EFGH data */
+		val &= ~(0x1000);	//PERST=0
+		realtek_sys_write(REALTEK_GPIO_EFGH_BASE + 12, val);
+		mdelay(300);
+		mdelay(300);
+		val |= (0x1000);	//PERST=1
+		realtek_sys_write(REALTEK_GPIO_EFGH_BASE + 12, val);
+	}
+
+	realtek_pcie_phy_reset(rprc);
+	//PCIE_Check_Link ?
+}
+
 int pcibios_map_irq(const struct pci_dev *dev, u8 slot, u8 pin)
 {
 	switch (dev->bus->number) {
 	case 0:
 		if (soc_is_rtl8196c())
 			return REALTEK_SOC_IRQ(5);
+		else if (soc_is_rtl819xd())
+			return RTL819XD_INTCTL_RS_PCIE;
 		break;
+	/*case 1:
+		if (soc_is_rtl819xd())
+			return RTL819XD_INTCTL_RS_PCIE2;
+		break;*/
 	}
 
 	return -1;
@@ -207,6 +328,11 @@ void __init realtek_register_pci(void)
 	if (soc_is_rtl8196c()) {
 		rtl8196c_pcie_reset(&rprc0, 1);
 		__realtek_pci_register(0);
+	} else if (soc_is_rtl819xd()) {
+		rtl819xd_pcie_reset(&rprc0, 1);
+		__realtek_pci_register(0);
+		rtl819xd_pcie_reset(&rprc1, 1);
+		__realtek_pci_register(1);
 	} else
 		BUG();
 

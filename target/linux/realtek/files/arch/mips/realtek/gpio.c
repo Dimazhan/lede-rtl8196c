@@ -153,6 +153,16 @@ void __init realtek_set_gpio_mux(u32 clear, u32 set)
 	realtek_sys_write(REALTEK_SYS_REG_GPIO_MUX, val);
 }
 
+void __init realtek_set_gpio_mux2(u32 clear, u32 set)
+{
+	unsigned long val;
+
+	val = realtek_sys_read(REALTEK_SYS_REG_GPIO_MUX2);
+	val &= ~clear;
+	val |= set;
+	realtek_sys_write(REALTEK_SYS_REG_GPIO_MUX2, val);
+}
+
 void __init realtek_gpio_init(void)
 {
 	realtek_gpio_abcd.base = ioremap_nocache(REALTEK_GPIO_ABCD_BASE, REALTEK_GPIO_ABCD_SIZE);
@@ -162,7 +172,11 @@ void __init realtek_gpio_init(void)
 
 	if (soc_is_rtl8196c())
 		realtek_gpio_abcd.chip.ngpio = 17;
-	else
+	else if (soc_is_rtl819xd()) {
+		// 46 pins
+		realtek_gpio_abcd.chip.ngpio = 32;
+		realtek_gpio_efgh.chip.ngpio = 32;
+	} else
 		BUG();
 
 	if (realtek_gpio_abcd.chip.ngpio)

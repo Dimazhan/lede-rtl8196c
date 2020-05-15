@@ -48,12 +48,34 @@ static __init void rtl8196c_tc1_init(void)
 	__raw_writel(val, realtek_tc_base + REALTEK_TC_REG_IR);
 }
 
+static __init void rtl819xd_tc1_init(void)
+{
+	u32 tc1_data;
+	u32 val;
+
+	tc_data_shift = RTL819XD_TC_DATA_SHIFT;
+	tc1_data = RTL819XD_TC_DATA_MASK;
+
+	__raw_writel(tc1_data << tc_data_shift, realtek_tc_base + REALTEK_TC_REG_DATA1);
+
+	val = __raw_readl(realtek_tc_base + REALTEK_TC_REG_CTRL);
+	val |= REALTEK_TC_CTRL_TC1_EN | REALTEK_TC_CTRL_TC1_MODE;
+	__raw_writel(val, realtek_tc_base + REALTEK_TC_REG_CTRL);
+
+	val = __raw_readl(realtek_tc_base + REALTEK_TC_REG_IR);
+	val |= REALTEK_TC_IR_TC1_PENDING;
+	val &= ~REALTEK_TC_IR_TC1_EN;
+	__raw_writel(val, realtek_tc_base + REALTEK_TC_REG_IR);
+}
+
 static __init void rtl819x_tc1_init(void)
 {
 	tc_frequency = realtek_get_sys_clk_rate("timer");
 
 	if (soc_is_rtl8196c())
 		rtl8196c_tc1_init();
+	else if (soc_is_rtl819xd())
+		rtl819xd_tc1_init();
 	else
 		BUG();
 }

@@ -124,4 +124,8 @@ ifeq ($(SUBTARGET),rtl8196c)
 include ./rtl8196c.mk
 endif
 
+ifeq ($(SUBTARGET),rtl819xd)
+include ./rtl819xd.mk
+endif
+
 $(eval $(call BuildImage))

@@ -73,6 +73,11 @@ static void __init realtek_detect_soc_type(void)
 		chip = "8196C rev B";
 		break;
 
+	case SOC_ID_RTL8197DN:
+		rtl_soc = RTL_SOC_8197DN;
+		chip = "8197DN";
+		break;
+
 	default:
 		panic("Realtek: unknown SoC, id:0x%08x", chiprev);
 	}
@@ -145,7 +150,7 @@ void __init plat_time_init(void)
 	rtl819x_clocksource_init();
 }
 
-void __init plat_lexra_cache_init(void)
+void plat_lexra_cache_init(void)
 {
 	/* currently nothing to do */
 }

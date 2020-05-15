@@ -402,6 +402,15 @@ static void lexra_probe_cache(void)
 		lexra_has_dcacheop = 1;
 		lexra_has_wb_dcache = 1;
 		break;
+	case CPU_RLX5281:
+		lexra_dcache_lsize = 32;
+		lexra_icache_lsize = 32;
+		lexra_dcache_size = SZ_32K;
+		lexra_icache_size = SZ_64K;
+		lexra_has_dcacheop = 1;
+		lexra_has_wb_dcache = 1;
+		//lexra_imem0_size = SZ_16K;
+		break;
 	default:
 		BUG();
 	}

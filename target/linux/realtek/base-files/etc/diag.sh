@@ -8,6 +8,9 @@ get_status_led() {
 	local board=$(realtek_board_name)
 
 	case $board in
+	a3002ru)
+		status_led="tl:orange:status"
+		;;
 	au-home-spot-cube)
 		status_led="au:red:status"
 		;;

@@ -117,14 +117,91 @@ static void __init rtl8196c_usb_setup(void)
 	rtl8196c_ehci_wr(0xe3, 0xc1);
 	rtl8196c_ehci_wr(0xe5, 0x91);
 
-	realtek_usb_register(&realtek_ohci_device, REALTEK_CPU_IRQ(4));
-	realtek_usb_register(&realtek_ehci_device, REALTEK_CPU_IRQ(4));
+	realtek_usb_register(&realtek_ohci_device, RTL8196C_INTCTL_RS_USB_HOST);
+	realtek_usb_register(&realtek_ehci_device, RTL8196C_INTCTL_RS_USB_HOST);
+}
+
+static void __init rtl819xd_enable_USBPHY(int portnum)
+{
+	u32 val;
+
+	val = realtek_sys_read(REALTEK_SYS_REG_USB_PHY);
+	val &= ~(1<<18);
+	if (portnum==0) {	//phy0
+		val |= (1<<8);		//USBPHY_EN=1
+		val |= (1<<9);		//usbphy_reset=1, active high
+		val &= ~(1<<9);		//usbphy_reset=0, active high
+		val |= (1<<10);		//active_usbphyt=1
+	} else {			//phy1
+		val |= (1<<19);		//USBPHY_EN=1
+		val |= (1<<20);		//usbphy_reset=1, active high
+		val &= ~(1<<20);	//usbphy_reset=0, active high
+		val |= (1<<21);		//active_usbphyt=1
+	}
+	realtek_sys_write(REALTEK_SYS_REG_USB_PHY, val);
+}
+
+static void __init rtl819xd_usb_setup(void)
+{
+	u32 val;
+	int oneportsel;
+
+	//one port sel
+	//is 0: phy#1 connect OTG  mac, EHCI is in phy0
+	//is 1: phy#1 connect EHCI mac
+#ifdef CONFIG_RTL_USB_OTG
+	oneportsel = 0;
+	val = realtek_sys_read(REALTEK_SYS_REG_USB_SIE);
+	val &= ~(1<<18);
+	realtek_sys_write(REALTEK_SYS_REG_USB_SIE, val);
+#else
+#if 1 //software force
+	oneportsel = 1;
+	val = realtek_sys_read(REALTEK_SYS_REG_USB_SIE);
+	val |= (1<<18);
+	realtek_sys_write(REALTEK_SYS_REG_USB_SIE, val);
+#else  //read-back decide
+	oneportsel = (realtek_sys_read(REALTEK_SYS_REG_USB_SIE) & (1<<18))>>18;
+	printk("EHCI: one_port_host_sel=%d, EHCI in Port %s\n", oneportsel, (oneportsel==0) ? "0": "1");
+#endif
+#endif
+	val = realtek_sys_read(REALTEK_SYS_REG_USB_SIE);
+	val |= (1<<11); //s_utmi_suspend0=1
+	val |= (1<<12); //en_usbhost=1
+	val |= (1<<17); //enable pgbndry_disable=1
+	realtek_sys_write(REALTEK_SYS_REG_USB_SIE, val);
+
+	if (oneportsel==1) {
+		rtl819xd_enable_USBPHY(1);
+	} else {
+#ifdef CONFIG_RTL_OTGCTRL
+		extern unsigned int TurnOn_OTGCtrl_Interrupt(unsigned int);
+		unsigned int old = TurnOn_OTGCtrl_Interrupt(0);
+#endif
+		rtl819xd_enable_USBPHY(0);
+		rtl819xd_enable_USBPHY(1);
+#ifdef CONFIG_RTL_OTGCTRL
+		TurnOn_OTGCtrl_Interrupt(old);
+#endif
+	}
+
+	val = realtek_sys_read(REALTEK_SYS_REG_CLK_MANAGE);
+	val |= (1<<12)|(1<<13)|(1<<19)|(1<<20);	//enable lx1, lx2
+	val |= (1<<21);							//enable host ip
+	realtek_sys_write(REALTEK_SYS_REG_CLK_MANAGE, val);
+
+	mdelay(100);
+
+	realtek_usb_register(&realtek_ohci_device, RTL819XD_INTCTL_RS_USB_H);
+	realtek_usb_register(&realtek_ehci_device, RTL819XD_INTCTL_RS_USB_H);
 }
 
 void __init realtek_register_usb(void)
 {
 	if (soc_is_rtl8196c())
 		rtl8196c_usb_setup();
+	else if (soc_is_rtl819xd())
+		rtl819xd_usb_setup();
 	else
 		BUG();
 }

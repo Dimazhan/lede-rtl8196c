@@ -24,10 +24,13 @@
 static u32 tc_max_count;
 static u32 tc_frequency;
 static u32 tc_data_shift;
+static int irq;
 
 static void __init rtl8196c_tc0_init(void)
 {
 	u32 val;
+
+	irq = RTL8196C_INTCTL_RS_TC0;
 
 	if (soc_is_rtl8196c_rev_a()) {
 		tc_data_shift = RTL8196C_TC_DATA_REVA_SHIFT;
@@ -46,12 +49,32 @@ static void __init rtl8196c_tc0_init(void)
 	__raw_writel(val, realtek_tc_base + REALTEK_TC_REG_IR);
 }
 
+static void __init rtl819xd_tc0_init(void)
+{
+	u32 val;
+
+	irq = RTL819XD_INTCTL_RS_TC0;
+
+	tc_data_shift = RTL819XD_TC_DATA_SHIFT;
+	tc_max_count = RTL819XD_TC_DATA_MASK >> 1;
+
+	val = __raw_readl(realtek_tc_base + REALTEK_TC_REG_CTRL);
+	val &= ~(REALTEK_TC_CTRL_TC0_EN | REALTEK_TC_CTRL_TC0_MODE);
+	__raw_writel(val, realtek_tc_base + REALTEK_TC_REG_CTRL);
+
+	val = __raw_readl(realtek_tc_base + REALTEK_TC_REG_IR);
+	val |= REALTEK_TC_IR_TC0_EN | REALTEK_TC_IR_TC0_PENDING;
+	__raw_writel(val, realtek_tc_base + REALTEK_TC_REG_IR);
+}
+
 static void __init rtl819x_tc0_init(void)
 {
 	tc_frequency = realtek_get_sys_clk_rate("timer");
 
 	if (soc_is_rtl8196c())
 		rtl8196c_tc0_init();
+	else if (soc_is_rtl819xd())
+		rtl819xd_tc0_init();
 	else
 		BUG();
 }
@@ -116,14 +139,14 @@ int __init rtl819x_clockevent_init(void)
 	clockevent_set_clock(cd, tc_frequency);
 
 	cd->rating = 100;
-	cd->irq = REALTEK_SOC_IRQ_CLOCK_TIMER;
+	cd->irq = irq;
 	cd->max_delta_ns = clockevent_delta2ns(tc_max_count, cd);
 	cd->min_delta_ns = clockevent_delta2ns(0x300, cd);
 	cd->cpumask = cpumask_of(0);
 
 	clockevents_register_device(&rtl819x_clockevent);
 
-	setup_irq(REALTEK_SOC_IRQ_CLOCK_TIMER, &rtl819x_tc0_irqaction);
+	setup_irq(irq, &rtl819x_tc0_irqaction);
 
 	return 0;
 }

@@ -88,6 +88,10 @@ void __init realtek_register_uart(void)
 		realtek_uart0_data[0].irq = REALTEK_SOC_IRQ(7);
 		realtek_uart0_data[0].uartclk = uart_clk_rate;
 		platform_device_register(&ath79_uart0_device);
+	} else if (soc_is_rtl819xd()) {
+		realtek_uart0_data[0].irq = RTL819XD_INTCTL_RS_UART0;
+		realtek_uart0_data[0].uartclk = uart_clk_rate;
+		platform_device_register(&ath79_uart0_device);
 	} else {
 		BUG();
 	}
