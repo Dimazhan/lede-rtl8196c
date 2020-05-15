@@ -99,10 +99,72 @@ static void __init rtl8196c_clocks_init(void)
 	__raw_writel(timer_clk_div << REALTEK_TC_CLOCK_DIV_FACTOR_SHIFT, realtek_tc_base + REALTEK_TC_REG_CLOCK_DIV);
 }
 
+#define RTL819XD_DEFAULT_BUS_CLOCK_RATE		200000000
+
+static const u32 rtl819xd_cpu_clk[] =
+	{660000000, 680000000, 700000000, 720000000, 740000000, 760000000, 780000000, 800000000,
+	 620000000, 640000000, 580000000, 660000000, 540000000, 560000000, 500000000, 520000000};
+
+static const u32 rtl819xd_dram_clk[] =
+	{312000000, 387000000, 362000000, 462000000, 425000000, 250000000, 475000000, 337000000};
+
+unsigned int rtl819xd_cpu_div[] =
+	{1, 2, 2, 4};
+
+static void __init rtl819xd_clocks_init(void)
+{
+	unsigned long cpu_rate;
+	unsigned long dram_rate;
+	unsigned long bus_rate;
+	unsigned long timer_rate;
+	u32 bs;
+	u32 cpu_clk_sel;
+	u32 cpu_clk_div_sel;
+	u32 sdr_clk_sel;
+	u32 bus_clk_sel;
+	u32 timer_clk_div;
+
+	bs = realtek_sys_read(REALTEK_SYS_REG_BOOTSTRAP); //104a10
+
+	cpu_clk_sel = (bs >> RTL819XD_BOOTSTRAP_CPU_FREQ_SHIFT) & RTL819XD_BOOTSTRAP_CPU_FREQ_MASK;
+	cpu_clk_div_sel = (bs >> RTL819XD_BOOTSTRAP_CPU_FREQ_DIV_SHIFT) & RTL819XD_BOOTSTRAP_CPU_FREQ_DIV_MASK;
+	sdr_clk_sel = (bs >> RTL819XD_BOOTSTRAP_SDRAM_CLK_SEL_SHIFT) & RTL819XD_BOOTSTRAP_SDRAM_CLK_SEL_MASK;
+	bus_clk_sel = bs & RTL819XD_BOOTSTRAP_CLKLX_FROM_CLKM;
+
+	cpu_rate = rtl819xd_cpu_clk[cpu_clk_sel];
+
+	cpu_rate /= rtl819xd_cpu_div[cpu_clk_div_sel];
+
+	dram_rate = rtl819xd_dram_clk[sdr_clk_sel];
+
+	if (bus_clk_sel)
+		bus_rate = dram_rate;
+	else
+		bus_rate = RTL819XD_DEFAULT_BUS_CLOCK_RATE;
+
+	clks[0] = realtek_add_sys_clkdev("cpu", cpu_rate);
+	clks[1] = realtek_add_sys_clkdev("dram", dram_rate);
+	clks[2] = realtek_add_sys_clkdev("bus", bus_rate);
+
+	clk_add_alias("uart", NULL, "bus", NULL);
+
+	timer_clk_div = 2;
+
+	timer_rate = bus_rate / timer_clk_div;
+
+	clks[3] = realtek_add_sys_clkdev("timer", timer_rate);
+
+	clk_add_alias("wdt", NULL, "timer", NULL);
+
+	__raw_writel(timer_clk_div << REALTEK_TC_CLOCK_DIV_FACTOR_SHIFT, realtek_tc_base + REALTEK_TC_REG_CLOCK_DIV);
+}
+
 void __init realtek_clocks_init(void)
 {
 	if (soc_is_rtl8196c())
 		rtl8196c_clocks_init();
+	else if (soc_is_rtl819xd())
+		rtl819xd_clocks_init();
 	else
 		BUG();
 }

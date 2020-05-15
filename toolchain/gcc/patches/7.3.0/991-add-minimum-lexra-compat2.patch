@@ -1,0 +1,197 @@
+diff --git a/gcc/config/mips/mips-cpus.def b/gcc/config/mips/mips-cpus.def
+index 92578ab..8d7db32 100644
+--- a/gcc/config/mips/mips-cpus.def
++++ b/gcc/config/mips/mips-cpus.def
+@@ -174,5 +174,9 @@ MIPS_CPU ("i6400", PROCESSOR_I6400, 69, 0)
+ 
+ /* Lexra processors */
+ MIPS_CPU ("lx4180", PROCESSOR_LX4180, 1, 0)
+-MIPS_CPU ("rlx5281", PROCESSOR_RLX5281, 1, 0)
++MIPS_CPU ("rlx4181", PROCESSOR_RLX4181, 1, 0)
++MIPS_CPU ("rx4281", PROCESSOR_RX4281, 1, 0)
++MIPS_CPU ("rlx5181", PROCESSOR_RLX5181, 1, 0)
++MIPS_CPU ("lx5280", PROCESSOR_LX5280, 1, 0)
++MIPS_CPU ("rx5281", PROCESSOR_RX5281, 1, 0)
+ 
+diff --git a/gcc/config/mips/mips-tables.opt b/gcc/config/mips/mips-tables.opt
+index 7735218..911e2f8 100644
+--- a/gcc/config/mips/mips-tables.opt
++++ b/gcc/config/mips/mips-tables.opt
+@@ -700,5 +700,17 @@ EnumValue
+ Enum(mips_arch_opt_value) String(lx4180) Value(103) Canonical
+ 
+ EnumValue
+-Enum(mips_arch_opt_value) String(rlx5281) Value(104) Canonical
++Enum(mips_arch_opt_value) String(rlx4181) Value(104) Canonical
++
++EnumValue
++Enum(mips_arch_opt_value) String(rx4281) Value(105) Canonical
++
++EnumValue
++Enum(mips_arch_opt_value) String(rlx5181) Value(106) Canonical
++
++EnumValue
++Enum(mips_arch_opt_value) String(lx5280) Value(107) Canonical
++
++EnumValue
++Enum(mips_arch_opt_value) String(rx5281) Value(108) Canonical
+ 
+diff --git a/gcc/config/mips/mips.h b/gcc/config/mips/mips.h
+index 51a516c..2619052 100644
+--- a/gcc/config/mips/mips.h
++++ b/gcc/config/mips/mips.h
+@@ -286,9 +286,16 @@ struct mips_cpu_info {
+ 				     || mips_arch == PROCESSOR_SB1A)
+ #define TARGET_SR71K                (mips_arch == PROCESSOR_SR71000)
+ #define TARGET_XLP                  (mips_arch == PROCESSOR_XLP)
++
+ #define TARGET_LX4180		    (mips_arch == PROCESSOR_LX4180)
+-#define TARGET_RLX5281		    (mips_arch == PROCESSOR_RLX5281)
+-#define TARGET_LEXRA		    (TARGET_LX4180 || TARGET_RLX5281)
++#define TARGET_RLX4181		    (mips_arch == PROCESSOR_RLX4181)
++#define TARGET_RX4281		    (mips_arch == PROCESSOR_RX4281)
++#define TARGET_RLX5181		    (mips_arch == PROCESSOR_RLX5181)
++#define TARGET_LX5280		    (mips_arch == PROCESSOR_LX5280)
++#define TARGET_RX5281		    (mips_arch == PROCESSOR_RX5281)
++#define TARGET_LEXRA		    (TARGET_LX4180 || TARGET_RLX4181 \
++							  || TARGET_RX4281 || TARGET_RLX5181 \
++							  || TARGET_LX5280 || TARGET_RX5281)
+ 
+ /* Scheduling target defines.  */
+ #define TUNE_20KC		    (mips_tune == PROCESSOR_20KC)
+@@ -326,11 +326,31 @@ struct mips_cpu_info {
+ #define TUNE_SB1                    (mips_tune == PROCESSOR_SB1		\
+ 				     || mips_tune == PROCESSOR_SB1A)
+ #define TUNE_P5600                  (mips_tune == PROCESSOR_P5600)
+-#define TUNE_LX4180                 (mips_tune == PROCESSOR_LX4180)
+-#define TUNE_RLX5281                (mips_tune == PROCESSOR_RLX5281)
+-#define TUNE_LEXRA                  (TUNE_LX4180 || TUNE_RLX5281)
+ #define TUNE_I6400                  (mips_tune == PROCESSOR_I6400)
+ 
++#define TUNE_LX4180                 (mips_tune == PROCESSOR_LX4180)
++#define TUNE_RLX4181		    	(mips_tune == PROCESSOR_RLX4181)
++#define TUNE_RX4281				    (mips_tune == PROCESSOR_RX4281)
++#define TUNE_RLX5181			    (mips_tune == PROCESSOR_RLX5181)
++#define TUNE_LX5280				    (mips_tune == PROCESSOR_LX5280)
++#define TUNE_RX5281  	       		(mips_tune == PROCESSOR_RX5281)
++#define TUNE_LEXRA                  (TUNE_LX4180 || TUNE_RLX4181 \
++								  || TUNE_RX4281 || TUNE_RLX5181 \
++								  || TUNE_LX5280 || TUNE_RX5281)
++
++/* Instruction-set for Lexra defines. */
++#define INSN_RLX0		    (TARGET_LX4180)
++#define INSN_RLX1		    (TARGET_LX5280)
++#define INSN_RLX2		    (TARGET_RLX4181 || TARGET_RLX5181)
++#define INSN_RLX3		    (TARGET_RX4281 || TARGET_RX5281)
++
++#define INSN_RLXA		    (INSN_RLX0 || INSN_RLX1 || INSN_RLX2 \
++						  || INSN_RLX3)
++#define INSN_RLXB		    (INSN_RLX1 || INSN_RLX2 || INSN_RLX3)
++
++#define INSN_RAD1		    (INSN_5181 || INSN_5280 || INSN_5281)
++#define INSN_RAD2		    (INSN_5281)
++
+ /* Whether vector modes and intrinsics for ST Microelectronics
+    Loongson-2E/2F processors should be enabled.  In o32 pairs of
+    floating-point registers provide 64-bit values.  */
+@@ -646,8 +674,15 @@ struct mips_cpu_info {
+                  \
+       if (TARGET_LX4180)              \
+   builtin_define ("__m4180");          \
+-                 \
+-      if (TARGET_RLX5281)              \
++      else if (TARGET_RLX4181)						\
++  builtin_define ("__m4181");					\
++      else if (TARGET_RX4281)						\
++  builtin_define ("__m4281");					\
++      else if (TARGET_RLX5181)						\
++  builtin_define ("__m5181");					\
++      else if (TARGET_LX5280)						\
++  builtin_define ("__m5280");					\
++      if (TARGET_RX5281)              \
+   builtin_define ("__m5281");          \
+                  \
+       if (TARGET_LEXRA)              \
+@@ -819,7 +854,8 @@ struct mips_cpu_info {
+      march=vr41*|march=m4k|march=4k*|march=24kc|march=24kec \
+      |march=34kc|march=34kn|march=74kc|march=1004kc|march=5kc \
+      |march=m14k*|march=m5101|march=octeon|march=xlr \
+-     |march=lx4180|march=rlx5281: -msoft-float; \
++     |march=lx4180|march=rlx4181|march=rx4281|march=rlx5181 \
++     |march=lx5280|march=rx5281: -msoft-float; \
+      march=*: -mhard-float}"
+ 
+ /* A spec condition that matches 32-bit options.  It only works if
+@@ -1031,7 +1067,8 @@ struct mips_cpu_info {
+    ST Loongson 2E/2F.  */
+ #define ISA_HAS_CONDMOVE        (ISA_HAS_FP_CONDMOVE			\
+ 				 || TARGET_MIPS5900			\
+-				 || TARGET_LOONGSON_2EF)
++				 || TARGET_LOONGSON_2EF \
++				 || (!TARGET_MIPS16 && INSN_RLXB))
+ 
+ /* ISA has LDC1 and SDC1.  */
+ #define ISA_HAS_LDC1_SDC1	(!ISA_MIPS1				\
+@@ -1276,7 +1313,7 @@ struct mips_cpu_info {
+ #define ISA_HAS_SYNCI (mips_isa_rev >= 2 && !TARGET_MIPS16)
+ 
+ /* ISA includes sync.  */
+-#define ISA_HAS_SYNC ((mips_isa >= 2 || TARGET_MIPS3900) && !TARGET_MIPS16)
++#define ISA_HAS_SYNC ((mips_isa >= 2 || TARGET_MIPS3900 || INSN_RLX3) && !TARGET_MIPS16)
+ #define GENERATE_SYNC			\
+   (target_flags_explicit & MASK_LLSC	\
+    ? TARGET_LLSC && !TARGET_MIPS16	\
+@@ -1285,7 +1322,7 @@ struct mips_cpu_info {
+ /* ISA includes ll and sc.  Note that this implies ISA_HAS_SYNC
+    because the expanders use both ISA_HAS_SYNC and ISA_HAS_LL_SC
+    instructions.  */
+-#define ISA_HAS_LL_SC (mips_isa >= 2 && !TARGET_MIPS5900 && !TARGET_MIPS16)
++#define ISA_HAS_LL_SC ((mips_isa >= 2 || INSN_RLX3) && !TARGET_MIPS5900 && !TARGET_MIPS16)
+ #define GENERATE_LL_SC			\
+   (target_flags_explicit & MASK_LLSC	\
+    ? TARGET_LLSC && !TARGET_MIPS16	\
+@@ -1418,7 +1455,11 @@ FP_ASM_SPEC "\
+ #undef CC1_SPEC
+ #define CC1_SPEC "\
+ %{mlx4180:-march=lx4180} \
+-%{mrlx5281:-march=rlx5281} \
++%{mrlx4181:-march=rlx4181} \
++%{mrx4281:-march=rx4281} \
++%{mrlx5181:-march=rlx5181} \
++%{mlx5280:-march=lx5280} \
++%{mrx5281:-march=rx5281} \
+ %{G*} %{EB:-meb} %{EL:-mel} %{EB:%{EL:%emay not use both -EB and -EL}} \
+ %(subtarget_cc1_spec)"
+ 
+diff --git a/gcc/config/mips/mips.md b/gcc/config/mips/mips.md
+index d370769..216467b 100644
+--- a/gcc/config/mips/mips.md
++++ b/gcc/config/mips/mips.md
+@@ -68,7 +68,11 @@
+   xlp
+   p5600
+   lx4180
+-  rlx5281
++  rlx4181
++  rx4281
++  rlx5181
++  lx5280
++  rx5281
+   m5100
+   i6400
+ ])
+diff --git a/gcc/config/mips/mips.opt b/gcc/config/mips/mips.opt
+index 1a7f0d0..7114cfd 100644
+--- a/gcc/config/mips/mips.opt
++++ b/gcc/config/mips/mips.opt
+@@ -315,6 +315,10 @@ mmcu
+ Target Report Var(TARGET_MCU)
+ Use MCU instructions.
+ 
++mlexra
++Target Report Mask(LEXRA)
++Do not use lwl/lwr/swl/swr instructions absent in Lexra chips
++
+ mno-bdsl
+ Target Report Var(flag_fix_bdsl) Init(0)
+ Forbid the use of load instructions in the branch delay slots for all cases

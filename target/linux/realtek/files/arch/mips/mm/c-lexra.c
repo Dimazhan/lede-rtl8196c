@@ -40,17 +40,17 @@ int lexra_imem0_size = SZ_4K;
 int lexra_imem1_size = SZ_4K;
 int lexra_has_dual_cmem = 0;
 
-extern char __iram;
+extern char __iram_start;
 extern char __dram_start;
 extern char __dram_end;
 
 static void lexra_cmem_init(void)
 {
-	u32 iram_base = CPHYSADDR(((u32) &__iram) & ~(SZ_16K - 1));
+	u32 iram_base = CPHYSADDR(((u32) &__iram_start) & ~(SZ_16K - 1));
 	u32 dram_base = CPHYSADDR(((u32) &__dram_start) & ~(SZ_8K - 1));
 
 	/* XXX: do not use it at present */
-	return;
+	//return;
 
 	/* enable co-processor 3 */
 	write_c0_status(read_c0_status() | ST0_CU3);
@@ -74,12 +74,7 @@ static void lexra_cmem_init(void)
 	if (!lexra_has_dual_cmem) {
 		/* set I-MEM base and size */
 		write_c3_imembase(iram_base);
-#if 0
-		if (soc_is_rtl819xd())
-			write_c3_imemtop(iram_base + SZ_8K - 1);
-		else
-#endif
-			write_c3_imemtop(iram_base + SZ_16K - 1);
+		write_c3_imemtop(iram_base + SZ_16K - 1);
 
 		/* I-MEM refill */
 		write_c0_cctl(0);
@@ -401,6 +396,15 @@ static void lexra_probe_cache(void)
 	case CPU_LX8380:
 		lexra_has_dcacheop = 1;
 		lexra_has_wb_dcache = 1;
+		break;
+	case CPU_RX5281:
+		lexra_dcache_lsize = 32;
+		lexra_icache_lsize = 32;
+		lexra_dcache_size = SZ_32K;
+		lexra_icache_size = SZ_64K;
+		lexra_has_dcacheop = 1;
+		lexra_has_wb_dcache = 1;
+		lexra_imem0_size = SZ_16K;
 		break;
 	default:
 		BUG();

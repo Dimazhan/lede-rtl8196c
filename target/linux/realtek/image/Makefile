@@ -78,8 +78,10 @@ define Build/append-cvimg-rootfs
 	$(STAGING_DIR_HOST)/bin/cvimg \
 		-i $(IMAGE_ROOTFS).new \
 		-o $(IMAGE_ROOTFS).new \
-		-e $(CVIMG_ROOTFS_BURN_ADDR) \
-		-b $(CVIMG_ROOTFS_BURN_ADDR) \
+		-e $(if $(CVIMG_ROOTFS_BURN_ADDR),$(CVIMG_ROOTFS_BURN_ADDR),$$(echo -n \
+			$$((($$(stat -c %s $@)/0x1000+1)*0x1000+$(CVIMG_KERNEL_BURN_ADDR))))) \
+		-b $(if $(CVIMG_ROOTFS_BURN_ADDR),$(CVIMG_ROOTFS_BURN_ADDR),$$(echo -n \
+			$$((($$(stat -c %s $@)/0x1000+1)*0x1000+$(CVIMG_KERNEL_BURN_ADDR))))) \
 		-c $(CVIMG_CPU_TYPE) \
 		-t rootfs \
 		$(1) && (dd if=$(IMAGE_ROOTFS).new >> $@ && \
@@ -109,19 +111,23 @@ define Device/Default
   BLOCKSIZE := 4k
   CONSOLE = ttyS0,115200
   CMDLINE = $$(if $$(BOARDNAME),machtype=$$(BOARDNAME)) $$(if $$(MTDPARTS),mtdparts=$$(MTDPARTS)) $$(if $$(CONSOLE),console=$$(CONSOLE))
-  CVIMG_LOADER_START_ADDR := 0x80500000
-  CVIMG_ROOTFS_BURN_ADDR := 0
+  CVIMG_LOADER_START_ADDR := 0x80a00000
+  CVIMG_ROOTFS_BURN_ADDR :=
   CVIMG_CPU_TYPE := new
   LOADER_TYPE := bin
   KERNEL := kernel-bin | lzma | loader-cmdline-compile
   FILESYSTEMS := squashfs
   IMAGES := factory.bin sysupgrade.bin
-  IMAGE/factory.bin = append-kernel | append-fake-rootfs | append-rootfs | cvimg-fw | cvimg-pad-rootfs
-  IMAGE/sysupgrade.bin = append-kernel | append-fake-rootfs | append-rootfs | cvimg-fw | pad-rootfs
+  IMAGE/factory.bin = append-kernel | cvimg-kernel | append-cvimg-rootfs | cvimg-pad-rootfs
+  IMAGE/sysupgrade.bin = append-kernel | cvimg-kernel | pad-to 4k | append-rootfs | pad-rootfs
 endef
 
 ifeq ($(SUBTARGET),rtl8196c)
 include ./rtl8196c.mk
+endif
+
+ifeq ($(SUBTARGET),rtl819xd)
+include ./rtl819xd.mk
 endif
 
 $(eval $(call BuildImage))

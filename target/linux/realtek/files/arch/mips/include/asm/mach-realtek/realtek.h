@@ -18,6 +18,7 @@ enum realtek_soc_type {
 	RTL_SOC_UNKNOWN,
 	RTL_SOC_8196C_REV_A,
 	RTL_SOC_8196C_REV_B,
+	RTL_SOC_8197DN,
 };
 
 extern enum realtek_soc_type rtl_soc;
@@ -35,6 +36,16 @@ static inline int soc_is_rtl8196c_rev_b(void)
 static inline int soc_is_rtl8196c(void)
 {
 	return soc_is_rtl8196c_rev_a() || soc_is_rtl8196c_rev_b();
+}
+
+static inline int soc_is_rtl8197dn(void)
+{
+	return (rtl_soc == RTL_SOC_8197DN);
+}
+
+static inline int soc_is_rtl819xd(void)
+{
+	return soc_is_rtl8197dn();
 }
 
 #endif /* __ASM_MACH_REALTEK_H */

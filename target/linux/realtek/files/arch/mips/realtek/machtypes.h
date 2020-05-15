@@ -15,6 +15,7 @@
 
 enum realtek_mach_type {
 	REALTEK_MACH_GENERIC = 0,
+	REALTEK_MACH_A3002RU,
 	REALTEK_MACH_AU_HOME_SPOT_CUBE,
 };
 

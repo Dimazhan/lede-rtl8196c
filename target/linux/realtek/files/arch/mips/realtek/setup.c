@@ -59,6 +59,7 @@ static void __init realtek_detect_soc_type(void)
 {
 	char *chip = "????";
 	u32 chiprev;
+	u32 val;
 
 	chiprev = realtek_sys_read(REALTEK_SYS_REG_REVISION);
 
@@ -73,6 +74,11 @@ static void __init realtek_detect_soc_type(void)
 		chip = "8196C rev B";
 		break;
 
+	case SOC_ID_RTL8197DN:
+		rtl_soc = RTL_SOC_8197DN;
+		chip = "8197DN";
+		break;
+
 	default:
 		panic("Realtek: unknown SoC, id:0x%08x", chiprev);
 	}
@@ -80,6 +86,23 @@ static void __init realtek_detect_soc_type(void)
 	sprintf(realtek_soc_type, "Realtek RTL%s", chip);
 	
 	pr_info("Realtek SoC: %s\n", realtek_soc_type);
+
+	if (soc_is_rtl819xd()) {
+		
+		if ((realtek_sys_read(REALTEK_SYS_REG_REVISION) & 0xf) < 3) {
+			val = realtek_sys_read(0x88);
+			val &= ~(3<<5) & ~(0xF<<0);
+			val |= 1<<4;
+			val &= ~(3<<7);
+			realtek_sys_write(0x88, val);
+		}
+
+		/* define io/mem region */
+		ioport_resource.start = 0x18000000;
+		ioport_resource.end = 0x1fffffff;
+		iomem_resource.start = 0x18000000;
+		iomem_resource.end = 0x1fffffff;
+	}
 }
 
 const char *get_system_type(void)
@@ -145,7 +168,7 @@ void __init plat_time_init(void)
 	rtl819x_clocksource_init();
 }
 
-void __init plat_lexra_cache_init(void)
+void plat_lexra_cache_init(void)
 {
 	/* currently nothing to do */
 }

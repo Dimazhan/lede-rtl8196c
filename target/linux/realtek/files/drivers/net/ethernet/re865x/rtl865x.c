@@ -19,6 +19,7 @@
 #include <linux/bsearch.h>
 
 #include <asm/mach-realtek/realtek.h>
+#include <asm/mach-realtek/platform.h>
 
 #include "rtl865x.h"
 
@@ -233,6 +234,80 @@ static void rtl8196c_port_setup(struct rtl865x *rsw)
 	}
 }
 
+static void rtl819xd_fixup(struct rtl865x *rsw)
+{
+	int i;
+
+	for (i = 0; i < RTL865X_NUM_PHY_PORTS; i++)
+		rtl865x_reg_rmw(rsw, RTL865X_SW_REG_PORT_CONFIG(i), 0, RTL865X_SW_96C_98_PORT_FORCED_MODE);
+
+	for (i = 0; i < RTL865X_MAX_PHYS; i++) {
+		rtl865x_phy_page_reg_rmw(rsw, i, 0, 21, 0, 0x0232);
+		rtl865x_phy_page_reg_rmw(rsw, i, 0, 22, 0, 0x5bd5);
+		rtl865x_phy_page_reg_rmw(rsw, i, 1, 18, 0, 0x9004);
+		rtl865x_phy_page_reg_rmw(rsw, i, 1, 19, 0, 0x5400);
+		rtl865x_phy_page_reg_rmw(rsw, i, 1, 25, 0, 0x00d0);
+		rtl865x_phy_page_reg_rmw(rsw, i, 4, 16, 0, 0x737f);
+		rtl865x_phy_page_reg_rmw(rsw, i, 4, 24, 0, 0xc0f3);
+		rtl865x_phy_page_reg_rmw(rsw, i, 4, 25, 0, 0x0730);
+	}
+
+	__raw_writel(0x009400A0, rsw->swcore_base + RTL865X_SW_GLOBAL_PORT_CTRL_BASE + 0x50c);
+	__raw_writel(0x009400A0, rsw->swcore_base + RTL865X_SW_GLOBAL_PORT_CTRL_BASE + 0x510);
+	__raw_writel(0x009400A0, rsw->swcore_base + RTL865X_SW_GLOBAL_PORT_CTRL_BASE + 0x514);
+	__raw_writel(0x009400A0, rsw->swcore_base + RTL865X_SW_GLOBAL_PORT_CTRL_BASE + 0x518);
+	__raw_writel(0x009400A0, rsw->swcore_base + RTL865X_SW_GLOBAL_PORT_CTRL_BASE + 0x51c);
+	__raw_writel(0x009400A0, rsw->swcore_base + RTL865X_SW_GLOBAL_PORT_CTRL_BASE + 0x524);
+
+	/* 100M half duplex enhancement */
+	rtl865x_reg_rmw(rsw, RTL865X_SW_REG_MAC_CONFIG, RTL865X_SW_CF_RXIPG_MASK, 0x5);
+
+	/* fix the link down / link up issue when RTL8196c set to Auto-negotiation
+	    and SmartBit force to 100M Full-duplex */
+	rtl865x_reg_rmw(rsw, RTL865X_SW_REG_MAC_CONFIG,
+		RTL865X_SW_SELIPG_MASK << RTL865X_SW_SELIPG_SHIFT,
+		RTL865X_SW_SELIPG_11 << RTL865X_SW_SELIPG_SHIFT);
+
+	__raw_writel(0x400b, rsw->swcore_base + RTL865X_SW_GLOBAL_PORT_CTRL_BASE + 0x904);
+	__raw_writel(0xc0, rsw->swcore_base + RTL865X_SW_GLOBAL_PORT_CTRL_BASE + 0x908);
+	__raw_writel(0x400b, rsw->swcore_base + RTL865X_SW_GLOBAL_PORT_CTRL_BASE + 0x910);
+
+	__raw_writel(0x28739ce7, rsw->swcore_base + RTL865X_SW_GLOBAL_PORT_CTRL_BASE + 0x160);
+
+	for (i = 0; i < RTL865X_NUM_PHY_PORTS; i++)
+		rtl865x_reg_rmw(rsw, RTL865X_SW_REG_PORT_CONFIG(i), RTL865X_SW_96C_98_PORT_FORCED_MODE, 0);
+}
+
+static void rtl819xd_port_setup(struct rtl865x *rsw)
+{
+	int i;
+	extern void realtek_set_gpio_mux(u32 clear, u32 set);
+	extern void realtek_set_gpio_control(u32 gpio, bool soft_ctrl);
+	extern void realtek_set_gpio_direction_output(unsigned gpio, int value);
+
+	rtl819xd_fixup(rsw);
+
+	realtek_set_gpio_mux(RTL819XD_GPIO_MUX_REG_IOCFG_MASK<<RTL819XD_GPIO_MUX_REG_IOCFG_SHIFT,
+		RTL819XD_GPIO_MUX_SWCORE_MASK<<RTL819XD_GPIO_MUX_SWCORE_SHIFT);
+	realtek_set_gpio_control(RTL819XD_GPIO_SWCORE_RESET, true);
+	realtek_set_gpio_direction_output(RTL819XD_GPIO_SWCORE_RESET, 0);
+	mdelay(50);
+	realtek_set_gpio_direction_output(RTL819XD_GPIO_SWCORE_RESET, 1);
+	mdelay(50);
+	/*realtek_set_gpio_direction_output(RTL819XD_GPIO_SWCORE_MDC, 0);
+	realtek_set_gpio_direction_output(RTL819XD_GPIO_SWCORE_MDIO, 0);*/
+
+	for (i = 0; i < rsw->num_ports; i++)
+	{
+		rtl865x_reg_rmw(rsw, RTL865X_SW_REG_PORT_CONFIG(i), RTL865X_SW_96C_98_PORT_MAC_RESET_L, 0);
+		rtl865x_reg_rmw(rsw, RTL865X_SW_REG_PORT_CONFIG(i), 0,
+			(i << RTL865X_SW_96C_98_PORT_EXT_PHY_ID_SHIFT) |
+			(RTL865X_SW_PORT_PACKET_LENGTH_1536 << RTL865X_SW_PORT_PACKET_LENGTH_SHIFT) |
+			RTL865X_SW_PORT_ENABLE_PHY_IF |
+			RTL865X_SW_96C_98_PORT_MAC_RESET_L);
+	}
+}
+
 static void rtl865x_lut_start(struct rtl865x *rsw)
 {
 	rtl865x_reg_rmw(rsw, RTL865X_SW_REG_TABLE_CONTROL_0, RTL865X_SW_TLU_STOP, 0);
@@ -434,8 +509,19 @@ static int rtl865x_ephy_poll_reset(struct mii_bus *bus)
 static void rtl865x_reset(struct rtl865x *rsw)
 {
 	int i;
+	u32 val;
+	extern void __iomem *realtek_sys_base;
 
-	rtl865x_reg_write(rsw, RTL865X_SW_REG_RESET, RTL865X_SW_RESET_FULL);
+	if (soc_is_rtl8196c())
+		rtl865x_reg_write(rsw, RTL865X_SW_REG_RESET, RTL865X_SW_RESET_FULL);
+	else if (soc_is_rtl819xd()) {
+		val = __raw_readl(realtek_sys_base + REALTEK_SYS_REG_CLK_MANAGE);
+		val &= ~(1<<11);	//active_swcore=0
+		__raw_writel(val, realtek_sys_base + REALTEK_SYS_REG_CLK_MANAGE);
+		mdelay(50);
+		val |= (1<<11);	//active_swcore=1
+		__raw_writel(val, realtek_sys_base + REALTEK_SYS_REG_CLK_MANAGE);
+	}
 	mdelay(50);
 
 	/* reset mib counters */
@@ -443,6 +529,8 @@ static void rtl865x_reset(struct rtl865x *rsw)
 
 	if (soc_is_rtl8196c())
 		rtl8196c_port_setup(rsw);
+	else if (soc_is_rtl819xd())
+		rtl819xd_port_setup(rsw);
 
 	/* enable broadcast packets to cpu port */
 	rtl865x_reg_rmw(rsw, RTL865X_SW_REG_FRAME_FORWARDING_CONFIG, 0,
@@ -776,7 +864,7 @@ int rtl865x_switch_probe(struct rtl865x *rsw)
 	int err;
 	int i;
 
-	if (soc_is_rtl8196c()) {
+	if (soc_is_rtl8196c()/* || soc_is_rtl819xd()*/) {
 		rsw->num_ports = RTL865X_NUM_PHY_PORTS;
 	} else {
 		dev_err(rsw->parent, "unsupported soc for built-in switch\n");

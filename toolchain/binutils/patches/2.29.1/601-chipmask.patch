@@ -1,0 +1,23 @@
+diff --git a/include/opcode/mips.h b/include/opcode/mips.h
+index a2dd8a3..276959f 100644
+--- a/include/opcode/mips.h
++++ b/include/opcode/mips.h
+@@ -1220,7 +1220,7 @@ static const unsigned int mips_isa_table[] = {
+ #undef ISAF
+ 
+ /* Masks used for Chip specific instructions.  */
+-#define INSN_CHIP_MASK		  0xc7ff4f60
++#define INSN_CHIP_MASK		  0xdfff4f60
+ 
+ /* Cavium Networks Octeon instructions.  */
+ #define INSN_OCTEON		  0x00000800
+@@ -1264,7 +1264,7 @@ static const unsigned int mips_isa_table[] = {
+ #define INSN_INTERAPTIV_MR2	  0x04000000
+ 
+ /* Lexra instructions */
+-#define INSN_4180                0x00000040
+-#define INSN_5281                0x00000080
++#define INSN_4180                0x08000000
++#define INSN_5281                0x10000000
+ 
+ /* DSP ASE */

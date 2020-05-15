@@ -178,6 +178,11 @@ ifeq ($(DUMP),1)
     CPU_CFLAGS_octeon = -march=octeon -mabi=64
     CPU_CFLAGS_octeonplus = -march=octeon+ -mabi=64
     CPU_CFLAGS_lx4180 = -march=lx4180
+    CPU_CFLAGS_rlx4181 = -march=rlx4181
+    CPU_CFLAGS_rx4281 = -march=rx4281
+    CPU_CFLAGS_rlx5181 = -march=rlx5181
+    CPU_CFLAGS_lx5280 = -march=lx5280
+    CPU_CFLAGS_rx5281 = -march=rx5281
   endif
   ifeq ($(ARCH),i386)
     CPU_TYPE ?= pentium

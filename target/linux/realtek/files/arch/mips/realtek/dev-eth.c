@@ -68,6 +68,10 @@ static struct platform_device realtek_eth_device = {
 
 void __init realtek_register_eth(void)
 {
-	realtek_eth_resource[0].start = realtek_eth_resource[0].end = REALTEK_CPU_IRQ(6);
+	if (soc_is_rtl8196c())
+		realtek_eth_resource[0].start = realtek_eth_resource[0].end = RTL8196C_INTCTL_RS_SWCORE;
+	else if (soc_is_rtl819xd())
+		realtek_eth_resource[0].start = realtek_eth_resource[0].end = RTL819XD_INTCTL_RS_SWCORE;
+
 	platform_device_register(&realtek_eth_device);
 }

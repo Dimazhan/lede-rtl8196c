@@ -14,6 +14,9 @@
 void realtek_gpio_init(void);
 
 void realtek_set_gpio_control(u32 gpio, bool soft_ctrl);
+void realtek_set_gpio_direction_input(u32 gpio);
+void realtek_set_gpio_direction_output(u32 gpio, bool soft_ctrl);
 void realtek_set_gpio_mux(u32 clear, u32 set);
+void realtek_set_gpio_mux2(u32 clear, u32 set);
 
 #endif /* _REALTEK_GPIO_H */

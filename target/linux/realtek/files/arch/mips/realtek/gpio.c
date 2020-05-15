@@ -143,6 +143,36 @@ void __init realtek_set_gpio_control(u32 gpio, bool soft_ctrl)
 	__raw_writel(val, reg + REALTEK_GPIO_REG_CTRL);
 }
 
+void __init realtek_set_gpio_direction_input(unsigned gpio)
+{
+	struct gpio_chip *chip;
+
+	if (gpio < 32) {
+		chip = &realtek_gpio_abcd.chip;
+	} else if (gpio < 64) {
+		chip = &realtek_gpio_efgh.chip;
+		gpio -= 32;
+	} else
+		return;
+
+	realtek_gpio_direction_input(chip, gpio);
+}
+
+void __init realtek_set_gpio_direction_output(unsigned gpio, int value)
+{
+	struct gpio_chip *chip;
+
+	if (gpio < 32) {
+		chip = &realtek_gpio_abcd.chip;
+	} else if (gpio < 64) {
+		chip = &realtek_gpio_efgh.chip;
+		gpio -= 32;
+	} else
+		return;
+
+	realtek_gpio_direction_output(chip, gpio, value);
+}
+
 void __init realtek_set_gpio_mux(u32 clear, u32 set)
 {
 	unsigned long val;
@@ -151,6 +181,16 @@ void __init realtek_set_gpio_mux(u32 clear, u32 set)
 	val &= ~clear;
 	val |= set;
 	realtek_sys_write(REALTEK_SYS_REG_GPIO_MUX, val);
+}
+
+void __init realtek_set_gpio_mux2(u32 clear, u32 set)
+{
+	unsigned long val;
+
+	val = realtek_sys_read(REALTEK_SYS_REG_GPIO_MUX2);
+	val &= ~clear;
+	val |= set;
+	realtek_sys_write(REALTEK_SYS_REG_GPIO_MUX2, val);
 }
 
 void __init realtek_gpio_init(void)
@@ -162,7 +202,11 @@ void __init realtek_gpio_init(void)
 
 	if (soc_is_rtl8196c())
 		realtek_gpio_abcd.chip.ngpio = 17;
-	else
+	else if (soc_is_rtl819xd()) {
+		// 46 pins
+		realtek_gpio_abcd.chip.ngpio = 32;
+		realtek_gpio_efgh.chip.ngpio = 32;
+	} else
 		BUG();
 
 	if (realtek_gpio_abcd.chip.ngpio)

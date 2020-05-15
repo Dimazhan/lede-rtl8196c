@@ -125,11 +125,12 @@ Index: linux-4.14.13/arch/mips/Makefile
 ===================================================================
 --- linux-4.14.13.orig/arch/mips/Makefile
 +++ linux-4.14.13/arch/mips/Makefile
-@@ -150,6 +150,7 @@ cflags-y += -fno-stack-check
+@@ -150,6 +150,8 @@ cflags-y += -fno-stack-check
  # CPU-dependent compiler/assembler options for optimization.
  #
  cflags-$(CONFIG_CPU_R3000)	+= -march=r3000
 +cflags-$(CONFIG_CPU_LX4180)	+= -march=lx4180 -mno-llsc
++cflags-$(CONFIG_CPU_RLX5281)	+= -march=rlx5281 -mno-llsc
  cflags-$(CONFIG_CPU_TX39XX)	+= -march=r3900
  cflags-$(CONFIG_CPU_R4300)	+= -march=r4300 -Wa,--trap
  cflags-$(CONFIG_CPU_VR41XX)	+= -march=r4100 -Wa,--trap
@@ -137,7 +138,7 @@ Index: linux-4.14.13/arch/mips/include/asm/cpu-type.h
 ===================================================================
 --- linux-4.14.13.orig/arch/mips/include/asm/cpu-type.h
 +++ linux-4.14.13/arch/mips/include/asm/cpu-type.h
-@@ -97,6 +97,14 @@ static inline int __pure __get_cpu_type(
+@@ -97,6 +97,15 @@ static inline int __pure __get_cpu_type(
  	case CPU_R3052:
  	case CPU_R3081:
  	case CPU_R3081E:
@@ -147,6 +148,7 @@ Index: linux-4.14.13/arch/mips/include/asm/cpu-type.h
 +	case CPU_LX4380:
 +	case CPU_LX5180:
 +	case CPU_LX5280:
++	case CPU_RLX5281:
 +	case CPU_LX8000:
 +	case CPU_LX8380:
  #endif
@@ -156,17 +158,18 @@ Index: linux-4.14.13/arch/mips/include/asm/cpu.h
 ===================================================================
 --- linux-4.14.13.orig/arch/mips/include/asm/cpu.h
 +++ linux-4.14.13/arch/mips/include/asm/cpu.h
-@@ -90,6 +90,15 @@
+@@ -90,6 +90,16 @@
  #define PRID_IMP_R5432		0x5400
  #define PRID_IMP_R5500		0x5500
  #define PRID_IMP_LOONGSON_64	0x6300  /* Loongson-2/3 */
 +#define PRID_IMP_LX4180		0xc100
-+#define PRID_IMP_LX4280		0xc200
 +#define PRID_IMP_LX4189		0xc400
++#define PRID_IMP_LX4280		0xc200
++#define PRID_IMP_LX4380		0xcd00  /* Lexra LX4380 / RLX4181 */
 +#define PRID_IMP_LX5180		0xc500
 +#define PRID_IMP_LX5280		0xc600
++#define PRID_IMP_RLX5281		0xdc00
 +#define PRID_IMP_LX8000		0xc700
-+#define PRID_IMP_LX4380		0xcd00  /* Lexra LX4380 / RLX4181 */
 +#define PRID_IMP_LX8380		0xce00
 +
  
@@ -179,7 +182,7 @@ Index: linux-4.14.13/arch/mips/include/asm/cpu.h
 +	 * Lexra processors
 +	 */
 +	CPU_LX4180, CPU_LX4189, CPU_LX4280, CPU_LX4380, CPU_LX5180, CPU_LX5280,
-+	CPU_LX8000, CPU_LX8380,
++	CPU_RLX5281, CPU_LX8000, CPU_LX8380,
 +
 +	/*
  	 * R4000 class processors
@@ -354,7 +357,7 @@ Index: linux-4.14.13/arch/mips/kernel/cpu-probe.c
 ===================================================================
 --- linux-4.14.13.orig/arch/mips/kernel/cpu-probe.c
 +++ linux-4.14.13/arch/mips/kernel/cpu-probe.c
-@@ -1506,6 +1506,78 @@ static inline void cpu_probe_legacy(stru
+@@ -1506,6 +1506,87 @@ static inline void cpu_probe_legacy(stru
  		}
  
  		break;
@@ -406,6 +409,15 @@ Index: linux-4.14.13/arch/mips/kernel/cpu-probe.c
 +	case PRID_IMP_LX5280:
 +		c->cputype = CPU_LX5280;
 +		__cpu_name[cpu] = "Lexra LX5280";
++
++		c->options = MIPS_CPU_TLB | MIPS_CPU_3K_CACHE |
++			     MIPS_CPU_NOFPUEX;
++		c->ases = MIPS_ASE_MIPS16;
++		c->tlbsize = 64;	/* Assuming maximum number of TLB entries */
++		break;
++	case PRID_IMP_RLX5281:
++		c->cputype = CPU_RLX5281;
++		__cpu_name[cpu] = "Lexra RLX5281";
 +
 +		c->options = MIPS_CPU_TLB | MIPS_CPU_3K_CACHE |
 +			     MIPS_CPU_NOFPUEX;
@@ -691,7 +703,7 @@ Index: linux-4.14.13/arch/mips/mm/tlb-r3k.c
 ===================================================================
 --- linux-4.14.13.orig/arch/mips/mm/tlb-r3k.c
 +++ linux-4.14.13/arch/mips/mm/tlb-r3k.c
-@@ -283,9 +283,52 @@ void add_wired_entry(unsigned long entry
+@@ -283,9 +283,53 @@ void add_wired_entry(unsigned long entry
  	}
  }
  
@@ -734,6 +746,7 @@ Index: linux-4.14.13/arch/mips/mm/tlb-r3k.c
 +	case CPU_LX4380:
 +	case CPU_LX5180:
 +	case CPU_LX5280:
++	case CPU_RLX5281:
 +	case CPU_LX8000:
 +	case CPU_LX8380:
 +		/*
@@ -748,7 +761,7 @@ Index: linux-4.14.13/arch/mips/mm/tlbex.c
 ===================================================================
 --- linux-4.14.13.orig/arch/mips/mm/tlbex.c
 +++ linux-4.14.13/arch/mips/mm/tlbex.c
-@@ -2616,6 +2616,14 @@ void build_tlb_refill_handler(void)
+@@ -2616,6 +2616,15 @@ void build_tlb_refill_handler(void)
  	case CPU_TX3912:
  	case CPU_TX3922:
  	case CPU_TX3927:
@@ -758,6 +771,7 @@ Index: linux-4.14.13/arch/mips/mm/tlbex.c
 +	case CPU_LX4380:
 +	case CPU_LX5180:
 +	case CPU_LX5280:
++	case CPU_RLX5281:
 +	case CPU_LX8000:
 +	case CPU_LX8380:
  #ifndef CONFIG_MIPS_PGD_C0_CONTEXT

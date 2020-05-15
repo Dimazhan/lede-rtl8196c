@@ -1,0 +1,152 @@
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index 788b8ec..a8d3c1a 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -1593,8 +1593,24 @@ config CPU_LX4180
+ 	bool "Lexra LX4180"
+ 	select CPU_LEXRA
+ 
+-config CPU_RLX5281
+-	bool "Lexra RLX5281"
++config CPU_RLX4181
++	bool "Lexra RLX4181"
++	select CPU_LEXRA
++
++config CPU_RX4281
++	bool "Lexra RX4281"
++	select CPU_LEXRA
++
++config CPU_RLX5181
++	bool "Lexra RLX5181"
++	select CPU_LEXRA
++
++config CPU_LX5280
++	bool "Lexra LX5280"
++	select CPU_LEXRA
++
++config CPU_RX5281
++	bool "Lexra RX5281"
+ 	select CPU_LEXRA
+ 
+ config CPU_TX39XX
+diff --git a/arch/mips/Makefile b/arch/mips/Makefile
+index bffb92a..0166365 100644
+--- a/arch/mips/Makefile
++++ b/arch/mips/Makefile
+@@ -156,7 +156,11 @@ cflags-y += -fno-stack-check
+ #
+ cflags-$(CONFIG_CPU_R3000)	+= -march=r3000
+ cflags-$(CONFIG_CPU_LX4180)	+= -march=lx4180 -mno-llsc
+-cflags-$(CONFIG_CPU_RLX5281)	+= -march=rlx5281 -mno-llsc
++cflags-$(CONFIG_CPU_RLX4181)	+= -march=rlx4181 -mno-llsc
++cflags-$(CONFIG_CPU_RX4281)	+= -march=rx4281 -mno-llsc
++cflags-$(CONFIG_CPU_RLX5181)	+= -march=rlx5181 -mno-llsc
++cflags-$(CONFIG_CPU_LX5280)	+= -march=lx5280 -mno-llsc
++cflags-$(CONFIG_CPU_RX5281)	+= -march=rx5281 -mno-llsc
+ cflags-$(CONFIG_CPU_TX39XX)	+= -march=r3900
+ cflags-$(CONFIG_CPU_R4300)	+= -march=r4300 -Wa,--trap
+ cflags-$(CONFIG_CPU_VR41XX)	+= -march=r4100 -Wa,--trap
+diff --git a/arch/mips/include/asm/cpu-type.h b/arch/mips/include/asm/cpu-type.h
+index f02e244..e642fc2 100644
+--- a/arch/mips/include/asm/cpu-type.h
++++ b/arch/mips/include/asm/cpu-type.h
+@@ -98,12 +98,15 @@ static inline int __pure __get_cpu_type(const int cpu_type)
+ 	case CPU_R3081:
+ 	case CPU_R3081E:
+ 	case CPU_LX4180:
++	case CPU_RLX4181:
+ 	case CPU_LX4189:
+ 	case CPU_LX4280:
++	case CPU_RX4281:
+ 	case CPU_LX4380:
+ 	case CPU_LX5180:
++	case CPU_RLX5181:
+ 	case CPU_LX5280:
+-	case CPU_RLX5281:
++	case CPU_RX5281:
+ 	case CPU_LX8000:
+ 	case CPU_LX8380:
+ #endif
+diff --git a/arch/mips/include/asm/cpu.h b/arch/mips/include/asm/cpu.h
+index 419f2c0..6574779 100644
+--- a/arch/mips/include/asm/cpu.h
++++ b/arch/mips/include/asm/cpu.h
+@@ -96,7 +96,7 @@
+ #define PRID_IMP_LX4380		0xcd00  /* Lexra LX4380 / RLX4181 */
+ #define PRID_IMP_LX5180		0xc500
+ #define PRID_IMP_LX5280		0xc600
+-#define PRID_IMP_RLX5281		0xdc00
++#define PRID_IMP_RX5281		0xdc00
+ #define PRID_IMP_LX8000		0xc700
+ #define PRID_IMP_LX8380		0xce00
+ 
+@@ -299,8 +299,8 @@ enum cpu_type_enum {
+ 	/*
+ 	 * Lexra processors
+ 	 */
+-	CPU_LX4180, CPU_LX4189, CPU_LX4280, CPU_LX4380, CPU_LX5180, CPU_LX5280,
+-	CPU_RLX5281, CPU_LX8000, CPU_LX8380,
++	CPU_LX4180, CPU_RLX4181, CPU_LX4189, CPU_LX4280, CPU_RX4281, CPU_LX4380,
++	CPU_LX5180, CPU_RLX5181, CPU_LX5280, CPU_RX5281, CPU_LX8000, CPU_LX8380,
+ 
+ 	/*
+ 	 * R4000 class processors
+diff --git a/arch/mips/kernel/cpu-probe.c b/arch/mips/kernel/cpu-probe.c
+index 5b424d4..9d2f155 100644
+--- a/arch/mips/kernel/cpu-probe.c
++++ b/arch/mips/kernel/cpu-probe.c
+@@ -1560,9 +1560,9 @@ static inline void cpu_probe_legacy(struct cpuinfo_mips *c, unsigned int cpu)
+ 		c->ases = MIPS_ASE_MIPS16;
+ 		c->tlbsize = 64;	/* Assuming maximum number of TLB entries */
+ 		break;
+-	case PRID_IMP_RLX5281:
+-		c->cputype = CPU_RLX5281;
+-		__cpu_name[cpu] = "Lexra RLX5281";
++	case PRID_IMP_RX5281:
++		c->cputype = CPU_RX5281;
++		__cpu_name[cpu] = "Lexra RX5281";
+ 
+ 		c->options = MIPS_CPU_TLB | MIPS_CPU_3K_CACHE |
+ 			     MIPS_CPU_NOFPUEX;
+diff --git a/arch/mips/mm/tlb-r3k.c b/arch/mips/mm/tlb-r3k.c
+index 48f3dbd..ed0b647 100644
+--- a/arch/mips/mm/tlb-r3k.c
++++ b/arch/mips/mm/tlb-r3k.c
+@@ -317,12 +317,15 @@ void tlb_init(void)
+ {
+ 	switch (current_cpu_type()) {
+ 	case CPU_LX4180:
++	case CPU_RLX4181:
+ 	case CPU_LX4189:
+ 	case CPU_LX4280:
++	case CPU_RX4281:
+ 	case CPU_LX4380:
+ 	case CPU_LX5180:
++	case CPU_RLX5181:
+ 	case CPU_LX5280:
+-	case CPU_RLX5281:
++	case CPU_RX5281:
+ 	case CPU_LX8000:
+ 	case CPU_LX8380:
+ 		/*
+diff --git a/arch/mips/mm/tlbex.c b/arch/mips/mm/tlbex.c
+index de273b5..c803476 100644
+--- a/arch/mips/mm/tlbex.c
++++ b/arch/mips/mm/tlbex.c
+@@ -2617,12 +2617,15 @@ void build_tlb_refill_handler(void)
+ 	case CPU_TX3922:
+ 	case CPU_TX3927:
+ 	case CPU_LX4180:
++	case CPU_RLX4181:
+ 	case CPU_LX4189:
+ 	case CPU_LX4280:
++	case CPU_RX4281:
+ 	case CPU_LX4380:
+ 	case CPU_LX5180:
++	case CPU_RLX5181:
+ 	case CPU_LX5280:
+-	case CPU_RLX5281:
++	case CPU_RX5281:
+ 	case CPU_LX8000:
+ 	case CPU_LX8380:
+ #ifndef CONFIG_MIPS_PGD_C0_CONTEXT

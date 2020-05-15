@@ -19,6 +19,9 @@ realtek_board_detect() {
 	"AU HOME SPOT CUBE")
 		name="au-home-spot-cube"
 		;;
+	"TOTOLINK A3002RU")
+		name="a3002ru"
+		;;
 	esac
 
 	[ -z "$name" ] && name="unknown"
