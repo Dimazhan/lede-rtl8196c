@@ -343,10 +343,10 @@ int pcibios_map_irq(const struct pci_dev *dev, u8 slot, u8 pin)
 		else if (soc_is_rtl819xd())
 			return RTL819XD_INTCTL_RS_PCIE;
 		break;
-	case 1:
+	/*case 1:
 		if (soc_is_rtl819xd())
 			return RTL819XD_INTCTL_RS_PCIE2;
-		break;
+		break;*/
 	}
 
 	return -1;
