@@ -1,0 +1,21 @@
+diff --git a/arch/mips/pthread_arch.h b/arch/mips/pthread_arch.h
+index e581265..e000ae8 100644
+--- a/arch/mips/pthread_arch.h
++++ b/arch/mips/pthread_arch.h
+@@ -1,11 +1,16 @@
+ static inline struct pthread *__pthread_self()
+ {
++#if defined(__m5281) || defined(__m4281)
++	char *tp;
++	__asm__ __volatile__ ("mflxc0 %0, $8" : "=r" (tp) );
++#else
+ #if __mips_isa_rev < 2
+ 	register char *tp __asm__("$3");
+ 	__asm__ __volatile__ (".word 0x7c03e83b" : "=r" (tp) );
+ #else
+ 	char *tp;
+ 	__asm__ __volatile__ ("rdhwr %0, $29" : "=r" (tp) );
++#endif
+ #endif
+ 	return (pthread_t)(tp - 0x7000 - sizeof(struct pthread));
+ }
