@@ -29,6 +29,10 @@ define Build/loader-cmdline-compile
 	$(call Build/loader-common,LOADER_DATA="$@" KERNEL_CMDLINE="$(CMDLINE)")
 endef
 
+define Build/loader-cmdline-initramfs-compile
+	$(call Build/loader-common,LOADER_DATA="$@" KERNEL_CMDLINE="$(CMDLINE_INITRAMFS)")
+endef
+
 define Build/cvimg
 	$(STAGING_DIR_HOST)/bin/cvimg \
 		-i $@ \
@@ -111,11 +115,13 @@ define Device/Default
   BLOCKSIZE := 4k
   CONSOLE = ttyS0,115200
   CMDLINE = $$(if $$(BOARDNAME),machtype=$$(BOARDNAME)) $$(if $$(MTDPARTS),mtdparts=$$(MTDPARTS)) $$(if $$(CONSOLE),console=$$(CONSOLE))
+  CMDLINE_INITRAMFS = $$(if $$(BOARDNAME),machtype=$$(BOARDNAME)) $$(if $$(CONSOLE),console=$$(CONSOLE))
   CVIMG_LOADER_START_ADDR := 0x80a00000
   CVIMG_ROOTFS_BURN_ADDR :=
   CVIMG_CPU_TYPE := new
   LOADER_TYPE := bin
   KERNEL := kernel-bin | lzma | loader-cmdline-compile
+  KERNEL_INITRAMFS := kernel-bin | lzma | loader-cmdline-initramfs-compile
   FILESYSTEMS := squashfs
   IMAGES := factory.bin sysupgrade.bin
   IMAGE/factory.bin = append-kernel | cvimg-kernel | append-cvimg-rootfs | cvimg-pad-rootfs

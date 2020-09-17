@@ -21,11 +21,11 @@
 #include "dev-eth.h"
 #include "gpio.h"
 
-#define TL_GPIO_LED_USB				4 //BSP_GPIO_PIN_H7?
-#define TL_GPIO_LED_CPU				5 //BSP_GPIO_PIN_A6
+#define TL_GPIO_LED_USB				4 // GPIO pin, A4 !-
+#define TL_GPIO_LED_CPU				6 // GPIO pin, A6 !WPS
 
-#define TL_GPIO_BTN_WPS				3 //BSP_GPIO_PIN_H6
-#define TL_GPIO_BTN_RESET			5 //BSP_GPIO_PIN_E7 or BSP_GPIO_PIN_H5
+#define TL_GPIO_BTN_WPS				3 // GPIO pin, A3 !+
+#define TL_GPIO_BTN_RESET			5 // GPIO pin, A5 !+
 
 #define TL_KEYS_POLL_INTERVAL		100	/* msecs */
 #define TL_KEYS_DEBOUNCE_INTERVAL	(3 * TL_KEYS_POLL_INTERVAL)
@@ -36,7 +36,7 @@ static struct gpio_led tl_leds_gpio[] __initdata = {
 		.gpio		= TL_GPIO_LED_USB,
 		.active_low	= 1,
 	}, {
-		.name		= "tl:orange:pwr",
+		.name		= "tl:orange:cpu",
 		.gpio		= TL_GPIO_LED_CPU,
 		.active_low	= 1,
 	},
@@ -69,7 +69,7 @@ static void __init a3002ru_init(void)
 					tl_gpio_keys);
 
 	realtek_register_m25p80(NULL);
-	realtek_register_eth();
+	//realtek_register_eth();
 	//def mac 56aaa55a7de8
 
 	realtek_set_gpio_control(TL_GPIO_LED_USB, true);
@@ -78,8 +78,11 @@ static void __init a3002ru_init(void)
 	realtek_set_gpio_control(TL_GPIO_BTN_RESET, true);
 
 	realtek_set_gpio_mux(
-		RTL819XD_GPIO_MUX_UART0,
-		(RTL819XD_GPIO_MUX_JTAG_MASK << RTL819XD_GPIO_MUX_JTAG_SHIFT));
+		RTL819XD_GPIO_MUX_UART0 | RTL819XD_GPIO_MUX_PCIE_RST |
+		(RTL819XD_GPIO_MUX_JTAG_MASK_CLEAR << RTL819XD_GPIO_MUX_JTAG_SHIFT) |
+		(RTL819XD_GPIO_MUX_P0MDIO_MASK<<RTL819XD_GPIO_MUX_P0MDIO_SHIFT),
+		(RTL819XD_GPIO_MUX_JTAG_MASK_SET << RTL819XD_GPIO_MUX_JTAG_SHIFT) |
+		(RTL819XD_GPIO_MUX_FCS1N_MASK << RTL819XD_GPIO_MUX_FCS1N_SHIFT));
 }
 
 MIPS_MACHINE(REALTEK_MACH_A3002RU, "A3002RU", "TOTOLINK A3002RU",

@@ -1,0 +1,39 @@
+diff --git a/crt/mips/crtn.s b/crt/mips/crtn.s
+index 9597196..0aefc0c 100644
+--- a/crt/mips/crtn.s
++++ b/crt/mips/crtn.s
+@@ -1,24 +1,28 @@
+ .set noreorder
+ 
++#ifndef __mlexra
+ .section .init
+ 	lw $gp,24($sp)
+ 	lw $ra,28($sp)
+-#ifndef __mlexra
++	j $ra
++	addu $sp,$sp,32
++
++.section .fini
++	lw $gp,24($sp)
++	lw $ra,28($sp)
+ 	j $ra
+ 	addu $sp,$sp,32
+ #else /* __mlexra */
++.section .init
++	lw $gp,24($sp)
++	lw $ra,28($sp)
+ 	addu $sp,$sp,32
+ 	j $ra
+ 	nop
+-#endif /* __mlexra */
+ 
+ .section .fini
+ 	lw $gp,24($sp)
+ 	lw $ra,28($sp)
+-#ifndef __mlexra
+-	j $ra
+-	addu $sp,$sp,32
+-#else /* __mlexra */
+ 	addu $sp,$sp,32
+ 	j $ra
+ 	nop

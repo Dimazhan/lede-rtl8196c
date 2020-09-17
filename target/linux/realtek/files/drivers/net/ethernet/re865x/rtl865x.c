@@ -281,21 +281,16 @@ static void rtl819xd_fixup(struct rtl865x *rsw)
 static void rtl819xd_port_setup(struct rtl865x *rsw)
 {
 	int i;
-	extern void realtek_set_gpio_mux(u32 clear, u32 set);
 	extern void realtek_set_gpio_control(u32 gpio, bool soft_ctrl);
 	extern void realtek_set_gpio_direction_output(unsigned gpio, int value);
 
 	rtl819xd_fixup(rsw);
 
-	realtek_set_gpio_mux(RTL819XD_GPIO_MUX_REG_IOCFG_MASK<<RTL819XD_GPIO_MUX_REG_IOCFG_SHIFT,
-		RTL819XD_GPIO_MUX_SWCORE_MASK<<RTL819XD_GPIO_MUX_SWCORE_SHIFT);
 	realtek_set_gpio_control(RTL819XD_GPIO_SWCORE_RESET, true);
 	realtek_set_gpio_direction_output(RTL819XD_GPIO_SWCORE_RESET, 0);
 	mdelay(50);
 	realtek_set_gpio_direction_output(RTL819XD_GPIO_SWCORE_RESET, 1);
 	mdelay(50);
-	/*realtek_set_gpio_direction_output(RTL819XD_GPIO_SWCORE_MDC, 0);
-	realtek_set_gpio_direction_output(RTL819XD_GPIO_SWCORE_MDIO, 0);*/
 
 	for (i = 0; i < rsw->num_ports; i++)
 	{

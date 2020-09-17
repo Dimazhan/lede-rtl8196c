@@ -159,7 +159,6 @@ static void __init rtl8196c_pcie_reset(struct realtek_pcie_reset_controller *rpr
 static void __init rtl819xd_pcie_reset(struct realtek_pcie_reset_controller *rprc, int pcie_xtal_40mhz)
 {
 	u32 val;
-#define PCIE1_GPIO	44
 
 	// Enable PCIe controller
 	val = realtek_sys_read(REALTEK_SYS_REG_CLK_MANAGE);
@@ -177,9 +176,8 @@ static void __init rtl819xd_pcie_reset(struct realtek_pcie_reset_controller *rpr
 		val |= RTL819XD_SYS_CLK_PCIE0_DEV_RST_L;
 		realtek_sys_write(REALTEK_SYS_REG_CLK_MANAGE, val);
 	} else {
-		realtek_set_gpio_mux(0,RTL819XD_GPIO_MUX_PCIE_RST_MASK << RTL819XD_GPIO_MUX_PCIE_RST_SHIFT);
-		realtek_set_gpio_control(PCIE1_GPIO, true);//port F bit 4 0x1000
-		realtek_set_gpio_direction_output(PCIE1_GPIO, 1);
+		realtek_set_gpio_control(RTL819XD_GPIO_PCIE1_RST, true);
+		realtek_set_gpio_direction_output(RTL819XD_GPIO_PCIE1_RST, 1);
 	}
 //#ifdef CONFIG_RTL_819XD
 	val = realtek_sys_read(REALTEK_SYS_REG_CLK_MANAGE);
@@ -245,9 +243,9 @@ static void __init rtl819xd_pcie_reset(struct realtek_pcie_reset_controller *rpr
 		realtek_sys_write(REALTEK_SYS_REG_CLK_MANAGE, val);
 		mdelay(1);
 	} else {
-		realtek_set_gpio_direction_output(PCIE1_GPIO, 0);
+		realtek_set_gpio_direction_output(RTL819XD_GPIO_PCIE1_RST, 0);
 		mdelay(1);
-		realtek_set_gpio_direction_output(PCIE1_GPIO, 1);
+		realtek_set_gpio_direction_output(RTL819XD_GPIO_PCIE1_RST, 1);
 		mdelay(1);
 	}
 
@@ -341,12 +339,12 @@ int pcibios_map_irq(const struct pci_dev *dev, u8 slot, u8 pin)
 		if (soc_is_rtl8196c())
 			return REALTEK_SOC_IRQ(5);
 		else if (soc_is_rtl819xd())
-			return RTL819XD_INTCTL_RS_PCIE;
+			return RTL819XD_INTCTL_RS_PCIE0;
 		break;
-	/*case 1:
+	case 1:
 		if (soc_is_rtl819xd())
-			return RTL819XD_INTCTL_RS_PCIE2;
-		break;*/
+			return RTL819XD_INTCTL_RS_PCIE1;
+		break;
 	}
 
 	return -1;
